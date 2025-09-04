@@ -3,37 +3,40 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Trait\TimestampableTrait;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
 #[ApiResource]
+#[ORM\HasLifecycleCallbacks]
 class Order
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\DateTime]
     private ?\DateTime $date = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
+    #[Assert\NotNull]
+    #[Assert\Positive(message : 'Le prix du produit doit être positif')]
+    #[Assert\Type(type: 'numeric')]
     private ?string $total = null;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $upadated_at = null;
 
     /**
      * @var Collection<int, Orderitem>
@@ -87,29 +90,6 @@ class Order
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    public function getUpadatedAt(): ?\DateTimeImmutable
-    {
-        return $this->upadated_at;
-    }
-
-    public function setUpadatedAt(?\DateTimeImmutable $upadated_at): static
-    {
-        $this->upadated_at = $upadated_at;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, Orderitem>

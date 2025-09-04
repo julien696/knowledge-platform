@@ -7,21 +7,24 @@ use App\Repository\ThemeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Trait\TimestampableTrait;
 
 #[ORM\Entity(repositoryClass: ThemeRepository::class)]
 #[ApiResource]
+#[ORM\HasLifecycleCallbacks]
 class Theme
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom du Théme est obligatoire')]
     private ?string $name = null;
-
-    #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\ManyToOne(inversedBy: 'themes')]
     private ?User $created_by = null;
@@ -30,7 +33,7 @@ class Theme
      * @var Collection<int, Cursus>
      */
     #[ORM\OneToMany(targetEntity: Cursus::class, mappedBy: 'theme', orphanRemoval: true)]
-    private Collection $cursuses;
+    private Collection $cursus;
 
     /**
      * @var Collection<int, Certification>
@@ -40,7 +43,7 @@ class Theme
 
     public function __construct()
     {
-        $this->cursuses = new ArrayCollection();
+        $this->cursus = new ArrayCollection();
         $this->certifications = new ArrayCollection();
     }
 
@@ -57,18 +60,6 @@ class Theme
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
-    {
-        $this->created_at = $created_at;
 
         return $this;
     }
@@ -90,13 +81,13 @@ class Theme
      */
     public function getCursuses(): Collection
     {
-        return $this->cursuses;
+        return $this->cursus;
     }
 
     public function addCursus(Cursus $cursus): static
     {
-        if (!$this->cursuses->contains($cursus)) {
-            $this->cursuses->add($cursus);
+        if (!$this->cursus->contains($cursus)) {
+            $this->cursus->add($cursus);
             $cursus->setTheme($this);
         }
 
@@ -105,7 +96,7 @@ class Theme
 
     public function removeCursus(Cursus $cursus): static
     {
-        if ($this->cursuses->removeElement($cursus)) {
+        if ($this->cursus->removeElement($cursus)) {
             // set the owning side to null (unless already changed)
             if ($cursus->getTheme() === $this) {
                 $cursus->setTheme(null);

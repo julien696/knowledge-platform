@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource]
 class Cursus extends Product
 {
-    #[ORM\ManyToOne(inversedBy: 'cursuses')]
+    #[ORM\ManyToOne(inversedBy: 'cursus')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Theme $theme = null;
 
@@ -26,12 +26,12 @@ class Cursus extends Product
      * @var Collection<int, EnrollmentCursus>
      */
     #[ORM\OneToMany(targetEntity: EnrollmentCursus::class, mappedBy: 'cursus')]
-    private Collection $enrollmentCursuses;
+    private Collection $enrollmentCursus;
 
     public function __construct()
     {
         $this->lessons = new ArrayCollection();
-        $this->enrollmentCursuses = new ArrayCollection();
+        $this->enrollmentCursus = new ArrayCollection();
     }
 
     public function getTheme(): ?Theme
@@ -79,15 +79,15 @@ class Cursus extends Product
     /**
      * @return Collection<int, EnrollmentCursus>
      */
-    public function getEnrollmentCursuses(): Collection
+    public function getEnrollmentCursus(): Collection
     {
-        return $this->enrollmentCursuses;
+        return $this->enrollmentCursus;
     }
 
     public function addEnrollmentCursus(EnrollmentCursus $enrollmentCursus): static
     {
-        if (!$this->enrollmentCursuses->contains($enrollmentCursus)) {
-            $this->enrollmentCursuses->add($enrollmentCursus);
+        if (!$this->enrollmentCursus->contains($enrollmentCursus)) {
+            $this->enrollmentCursus->add($enrollmentCursus);
             $enrollmentCursus->setCursus($this);
         }
 
@@ -96,7 +96,7 @@ class Cursus extends Product
 
     public function removeEnrollmentCursus(EnrollmentCursus $enrollmentCursus): static
     {
-        if ($this->enrollmentCursuses->removeElement($enrollmentCursus)) {
+        if ($this->enrollmentCursus->removeElement($enrollmentCursus)) {
             // set the owning side to null (unless already changed)
             if ($enrollmentCursus->getCursus() === $this) {
                 $enrollmentCursus->setCursus(null);
