@@ -47,14 +47,14 @@ class Product
     private ?User $updated_by = null;
 
     /**
-     * @var Collection<int, Orderitem>
+     * @var Collection<int, OrderItem>
      */
-    #[ORM\OneToMany(targetEntity: Orderitem::class, mappedBy: 'product')]
-    private Collection $orderitems;
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'product')]
+    private Collection $OrderItems;
 
     public function __construct()
     {
-        $this->orderitems = new ArrayCollection();
+        $this->OrderItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,29 +124,29 @@ class Product
     }
 
     /**
-     * @return Collection<int, Orderitem>
+     * @return Collection<int, OrderItem>
      */
-    public function getOrderitems(): Collection
+    public function getOrderItems(): Collection
     {
-        return $this->orderitems;
+        return $this->OrderItems;
     }
 
-    public function addOrderitem(Orderitem $orderitem): static
+    public function addOrderItem(OrderItem $OrderItem): static
     {
-        if (!$this->orderitems->contains($orderitem)) {
-            $this->orderitems->add($orderitem);
-            $orderitem->setProduct($this);
+        if (!$this->OrderItems->contains($OrderItem)) {
+            $this->OrderItems->add($OrderItem);
+            $OrderItem->setProduct($this);
         }
 
         return $this;
     }
 
-    public function removeOrderitem(Orderitem $orderitem): static
+    public function removeOrderItem(OrderItem $OrderItem): static
     {
-        if ($this->orderitems->removeElement($orderitem)) {
+        if ($this->OrderItems->removeElement($OrderItem)) {
             // set the owning side to null (unless already changed)
-            if ($orderitem->getProduct() === $this) {
-                $orderitem->setProduct(null);
+            if ($OrderItem->getProduct() === $this) {
+                $OrderItem->setProduct(null);
             }
         }
 

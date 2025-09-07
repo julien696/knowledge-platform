@@ -4,12 +4,12 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Trait\TimestampableTrait;
-use App\Repository\OrderitemRepository;
+use App\Repository\OrderItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: OrderitemRepository::class)]
+#[ORM\Entity(repositoryClass: OrderItemRepository::class)]
 #[ApiResource]
 #[ORM\HasLifecycleCallbacks]
 class OrderItem
@@ -27,11 +27,11 @@ class OrderItem
     #[Assert\Type(type: 'numeric')]
     private ?string $price = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orderitems')]
+    #[ORM\ManyToOne(inversedBy: 'OrderItems')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Order $orderId = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orderitems')]
+    #[ORM\ManyToOne(inversedBy: 'OrderItems')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Product $product = null;
 
