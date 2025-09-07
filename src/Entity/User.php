@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
 use App\Enum\UserRole;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,17 +11,33 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\Trait\TimestampableTrait;
+use App\State\UserStateProcessor;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/register',
+            processor: UserStateProcessor::class,
+            name: 'user_register',
+            normalizationContext: ['groups' => ['user:read']],
+            denormalizationContext: ['groups' => ['user:write']],
+            validationContext: ['groups' => ['user:register']]
+        )
+    ]
+)]
 #[ORM\HasLifecycleCallbacks]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use TimestampableTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
@@ -31,27 +48,40 @@ class User
         minMessage: "Le nom doit contenir au moins {{ limit }} caractères.",
         maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
     )]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email(
         message: "L'email {{ value }} n'est pas valide.",
-    )] 
+    )]
+    #[Groups(['user:read', 'user:write'])] 
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire')]
+    private ?string $password = null;
+    
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire', groups: ['user:register'])]
     #[Assert\Length(
         min: 6, 
         max: 255,
         minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères."
         )]
-    private ?string $password = null;
+    #[Groups(['user:write'])]
+    private ?string $plainPassword = null;
 
     #[ORM\Column(enumType: UserRole::class)]
     #[Assert\NotNull(message: "Le rôle est obligatoire.")]
+    #[Groups(['user:read', 'user:write'])]
     private ?UserRole $role = null;
+
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['user:read'])]
+    private bool $isVerified = false;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $confirmationToken = null;
 
     /**
      * @var Collection<int, Theme>
@@ -147,6 +177,17 @@ class User
         return $this;
     }
 
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
     public function getRole(): ?UserRole
     {
         return $this->role;
@@ -157,6 +198,43 @@ class User
         $this->role = $role;
 
         return $this;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        return [$this->role?->value ?? 'ROLE_USER'];
+    }
+
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $token): self
+    {
+        $this->confirmationToken = $token;
+        return $this;
+    }
+
+    public function eraseCredentials(): void
+    {
+        $this->plainPassword = null;
     }
 
     /**
