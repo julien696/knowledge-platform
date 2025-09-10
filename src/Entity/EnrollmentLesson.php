@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\Trait\TimestampableTrait;
 use App\Repository\EnrollmentLessonRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EnrollmentLessonRepository::class)]
@@ -16,6 +17,7 @@ class EnrollmentLesson
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['me:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'enrollmentLessons')]
@@ -24,10 +26,12 @@ class EnrollmentLesson
 
     #[ORM\ManyToOne(inversedBy: 'enrollmentLessons')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['me:read'])]
     private ?Lesson $lesson = null;
 
     #[ORM\Column]
     #[Assert\DateTime]
+    #[Groups(['me:read'])]
     private ?\DateTime $inscription = null;
 
     public function getId(): ?int

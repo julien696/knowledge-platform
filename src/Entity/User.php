@@ -37,7 +37,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'me:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
@@ -48,7 +48,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: "Le nom doit contenir au moins {{ limit }} caractères.",
         maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
     )]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'me:read'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -56,7 +56,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(
         message: "L'email {{ value }} n'est pas valide.",
     )]
-    #[Groups(['user:read', 'user:write'])] 
+    #[Groups(['user:read', 'user:write', 'me:read'])] 
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
@@ -72,8 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $plainPassword = null;
 
     #[ORM\Column(enumType: UserRole::class)]
-    #[Assert\NotNull(message: "Le rôle est obligatoire.")]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read'])]
     private ?UserRole $role = null;
 
     #[ORM\Column(type: 'boolean')]
@@ -87,6 +86,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Theme>
      */
     #[ORM\OneToMany(targetEntity: Theme::class, mappedBy: 'created_by')]
+    #[Groups(['me:read'])]
     private Collection $themes;
 
     /**
@@ -111,18 +111,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, EnrollmentCursus>
      */
     #[ORM\OneToMany(targetEntity: EnrollmentCursus::class, mappedBy: 'user')]
+    #[Groups(['me:read'])]
     private Collection $enrollmentCursuses;
 
     /**
      * @var Collection<int, EnrollmentLesson>
      */
     #[ORM\OneToMany(targetEntity: EnrollmentLesson::class, mappedBy: 'user')]
+    #[Groups(['me:read'])]
     private Collection $enrollmentLessons;
 
     /**
      * @var Collection<int, Certification>
      */
     #[ORM\OneToMany(targetEntity: Certification::class, mappedBy: 'user')]
+    #[Groups(['me:read'])]
     private Collection $certifications;
 
     public function __construct()

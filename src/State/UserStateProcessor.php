@@ -5,8 +5,8 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
+use App\Enum\UserRole;
 use Doctrine\ORM\EntityManagerInterface;
-use phpDocumentor\Reflection\Types\Mixed_;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -23,6 +23,10 @@ class UserStateProcessor implements ProcessorInterface
     {
         if (!$data instanceof User) {
             return $data;
+        }
+
+        if (!$data->getRole()) {
+            $data->setRole(UserRole::USER); 
         }
 
         if ($data->getPlainPassword()) {
