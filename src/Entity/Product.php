@@ -16,18 +16,18 @@ abstract class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['admin:read', 'admin:write'])]
+    #[Groups(['lesson:read', 'admin:read', 'admin:write', 'cursus:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom du produit est obligatoire')]
-    #[Groups(['admin:read', 'admin:write'])]
+    #[Groups(['lesson:read', 'admin:read', 'admin:write', 'cursus:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'float')]
     #[Assert\NotNull]
     #[Assert\Positive(message: 'Le prix du produit doit être positif')]
-    #[Groups(['admin:read', 'admin:write'])]
+    #[Groups(['lesson:read', 'admin:read', 'admin:write', 'cursus:read'])]
     private ?float $price = null;
 
     public function __construct() {}

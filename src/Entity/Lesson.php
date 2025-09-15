@@ -12,7 +12,9 @@ use App\Repository\LessonRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: LessonRepository::class)]
 #[ApiResource(
@@ -20,14 +22,14 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
         new GetCollection(
             uriTemplate: '/lesson',
             name: 'lesson_collection',
-            security: "is_granted('ROLE_ADMIN')",
-            normalizationContext: ['groups' => ['admin:read'], 'enable_max_depth' => true]
+            security: null,
+            normalizationContext: ['groups' => ['lesson:read'], 'enable_max_depth' => true]
         ),
         new Get(
             uriTemplate: '/lesson/{id}',
             name: 'lesson_id',
-            security: "is_granted('ROLE_ADMIN')",
-            normalizationContext: ['groups' => ['admin:read'], 'enable_max_depth' => true]
+            security: null,
+            normalizationContext: ['groups' => ['lesson:read'], 'enable_max_depth' => true]
         ),
         new Post(
             uriTemplate: '/lesson',
@@ -53,9 +55,19 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 class Lesson extends Product
 {
 
+    #[ORM\Column(type: 'text')]
+    #[Groups(['lesson:read'])]
+    private string $description;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\Url(message: 'L’URL de la vidéo doit être valide.')]
+    #[Groups(['lesson:read'])]
+    private string $videoUrl;
+
     #[ORM\ManyToOne(inversedBy: 'lessons')]
     #[ORM\JoinColumn(nullable: true)]
     #[MaxDepth(1)]
+    #[Groups(['lesson:read', 'cursus:read'])]
     private ?Cursus $cursus = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessonsCreated')]
@@ -83,6 +95,28 @@ class Lesson extends Product
         parent::__construct();
         $this->enrollmentLessons = new ArrayCollection();
         $this->orderItems = new ArrayCollection();
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getVideoUrl(): string
+    {
+        return $this->videoUrl;
+    }
+
+    public function setVideoUrl(string $videoUrl): self
+    {
+        $this->videoUrl = $videoUrl;
+        return $this;
     }
 
     public function getCursus(): ?Cursus
