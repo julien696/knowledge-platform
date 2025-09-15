@@ -42,13 +42,21 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # Routes publiques
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/confirm, roles: PUBLIC_ACCESS }
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api$, roles: PUBLIC_ACCESS }
+        
+        # Routes d'administration
+        - { path: ^/api/admin, roles: ROLE_ADMIN }
+        - { path: ^/api/users, methods: [POST, PUT, PATCH, DELETE], roles: ROLE_ADMIN }
+        - { path: ^/api/orders, methods: [GET], roles: ROLE_ADMIN }
+        
+        # Routes protégées nécessitant une authentification
+        - { path: ^/api/users, methods: [GET], roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/my/orders, methods: [GET], roles: ROLE_USER }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

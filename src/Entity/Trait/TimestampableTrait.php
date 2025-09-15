@@ -4,27 +4,42 @@ namespace App\Entity\Trait;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\HasLifecycleCallbacks]
 trait TimestampableTrait
 {
-    #[ORM\Column]
-    private ?\DateTimeImmutable $created_at=null;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[Groups(['admin:read'])]
+    private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $updated_at=null;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[Groups(['admin:read'])]
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\PrePersist]
-    public function setCreatedValue(): void
+    public function initializeTimestamps(): void
     {
-        $this->created_at = new \DateTimeImmutable();
-        $this->updated_at = new DateTimeImmutable();
+        $now = new \DateTimeImmutable();
+        if ($this->created_at === null) {
+            $this->created_at = $now;
+        }
+        $this->updated_at = $now;
+    }
+    
+    /**
+     * @internal
+     */
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->created_at = $createdAt;
+        return $this;
     }
 
     #[ORM\PreUpdate]
-    public function setUpdatedValue(): void
+    public function updateTimestamp(): void
     {
-        $this->upadated_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable();
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
@@ -32,8 +47,9 @@ trait TimestampableTrait
         return $this->created_at;
     }
 
-    public function getUpadatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updated_at;
     }
 }
+
