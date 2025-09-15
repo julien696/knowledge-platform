@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Get(
             uriTemplate: '/me',
+            name: 'me_profil',
             security: "is_granted('IS_AUTHENTICATED_FULLY')",
             normalizationContext: ['groups' => ['me:read']]
             )

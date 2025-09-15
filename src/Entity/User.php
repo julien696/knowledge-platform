@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Enum\UserRole;
 use App\Repository\UserRepository;
@@ -15,21 +16,67 @@ use App\State\UserStateProcessor;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
     operations: [
+        // Opération d'inscription (publique)
         new Post(
             uriTemplate: '/register',
             processor: UserStateProcessor::class,
             name: 'user_register',
-            normalizationContext: ['groups' => ['user:read']],
-            denormalizationContext: ['groups' => ['user:write']],
+            normalizationContext: ['groups' => ['user_register:read']],
+            denormalizationContext: ['groups' => ['user_register:write']],
             validationContext: ['groups' => ['user:register']]
+        ),
+        new GetCollection(
+            uriTemplate:'/users/list',
+            name:'user_list',
+            normalizationContext:['groups' => ['user_list:read']]
+        ),
+        // Opérations d'administration
+        new \ApiPlatform\Metadata\GetCollection(
+            uriTemplate:'/users/list_admin',
+            name: 'user_list_admin',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['admin_list:read']]
+        ),
+        new \ApiPlatform\Metadata\Get(
+            uriTemplate: '/user/{id}/admin',
+            name: 'user_by_id_admin',
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            normalizationContext: ['groups' => ['admin_user_id:read']]
+        ),
+         new \ApiPlatform\Metadata\Get(
+            uriTemplate: '/user/{id}',
+            name: 'user_by_id',
+            normalizationContext: ['groups' => ['user_id:read', 'me:read']]
+        ),
+        new \ApiPlatform\Metadata\Post(
+            uriTemplate: '/admin/users',
+            name: 'post_user',
+            security: "is_granted('ROLE_ADMIN')",
+            processor: UserStateProcessor::class,
+            denormalizationContext: ['groups' => ['admin:write']],
+            normalizationContext: ['groups' => ['admin:read']]
+        ),
+        new \ApiPlatform\Metadata\Put(
+            uriTemplate: '/admin/user/{id}',
+            name: 'put_user',
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            processor: UserStateProcessor::class,
+            denormalizationContext: ['groups' => ['admin:write']],
+            normalizationContext: ['groups' => ['admin:read']]
+        ),
+        new \ApiPlatform\Metadata\Delete(
+            security: "is_granted('ROLE_ADMIN')"
         )
-    ]
+    ],
 )]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity('email', message: 'Cet email est déjà utilisé')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use TimestampableTrait;
@@ -37,7 +84,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'me:read'])]
+    #[Groups([
+        'user_list:read',
+        'me:read',
+        'admin_list:read',
+        'admin_user_id:read',
+        'user_id:read',
+        'user_register:read',
+        'admin:read'
+        ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
@@ -48,7 +103,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: "Le nom doit contenir au moins {{ limit }} caractères.",
         maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
     )]
-    #[Groups(['user:read', 'user:write', 'me:read'])]
+    #[Groups([
+        'user_register:write',
+        'user_register:read',
+        'user_list:read',
+        'me:read',
+        'admin_list:read',
+        'admin:write',
+        'admin_user_id:read',
+        'user_id:read'
+        ])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -56,7 +120,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(
         message: "L'email {{ value }} n'est pas valide.",
     )]
-    #[Groups(['user:read', 'user:write', 'me:read'])] 
+    #[Groups([
+        'user_register:write',
+        'user_register:read',
+        'user_list:read',
+        'me:read',
+        'admin_list:read',
+        'admin:read',
+        'admin:write',
+        'admin_user_id:read',
+        'user_id:read'
+        ])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
@@ -68,15 +142,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         max: 255,
         minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères."
         )]
-    #[Groups(['user:write'])]
+    #[Groups([
+        'user_register:write',
+        'admin:write',
+        'user_register:read'
+        ])]
     private ?string $plainPassword = null;
 
     #[ORM\Column(enumType: UserRole::class)]
-    #[Groups(['user:read'])]
+    #[Groups([
+        'admin_list:read',
+        'admin:write',
+        'admin:read',
+        'admin_user_id:read'
+        ])]
     private ?UserRole $role = null;
 
     #[ORM\Column(type: 'boolean')]
-    #[Groups(['user:read'])]
+    #[Groups([
+        'me:read',
+        'admin_list:read',
+        'admin:read',
+        'admin:write',
+        'admin_user_id:read'
+        ])]
     private bool $isVerified = false;
 
     #[ORM\Column(length: 64, nullable: true)]
@@ -86,53 +175,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Theme>
      */
     #[ORM\OneToMany(targetEntity: Theme::class, mappedBy: 'created_by')]
-    #[Groups(['me:read'])]
+    #[Groups(['me:read', 'admin_user_id:read',])]
+    #[MaxDepth(1)]
     private Collection $themes;
 
     /**
-     * @var Collection<int, Product>
+     * @var Collection<int, Lesson>
      */
-    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'created_by')]
-    private Collection $products;
+    #[ORM\OneToMany(targetEntity: Lesson::class, mappedBy: 'created_by')]
+    #[MaxDepth(1)]
+    private Collection $lessonsCreated;
 
     /**
-     * @var Collection<int, Product>
+     * @var Collection<int, Lesson>
      */
-    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'updated_by')]
-    private Collection $updateProducts;
+    #[ORM\OneToMany(targetEntity: Lesson::class, mappedBy: 'updated_by')]
+    #[MaxDepth(1)]
+    private Collection $lessonsUpdated;
+
+    /**
+     * @var Collection<int, Cursus>
+     */
+    #[ORM\OneToMany(targetEntity: Cursus::class, mappedBy: 'created_by')]
+    #[MaxDepth(1)]
+    private Collection $cursusCreated;
+
+    /**
+     * @var Collection<int, Cursus>
+     */
+    #[ORM\OneToMany(targetEntity: Cursus::class, mappedBy: 'updated_by')]
+    #[MaxDepth(1)]
+    private Collection $cursusUpdated;
 
     /**
      * @var Collection<int, Order>
      */
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'user')]
+    #[Groups(['user:read', 'admin_user_id:read'])]
+    #[MaxDepth(1)]
     private Collection $orders;
 
     /**
      * @var Collection<int, EnrollmentCursus>
      */
     #[ORM\OneToMany(targetEntity: EnrollmentCursus::class, mappedBy: 'user')]
-    #[Groups(['me:read'])]
+    #[Groups(['me:read', 'admin_user_id'])]
+    #[MaxDepth(1)]
     private Collection $enrollmentCursuses;
 
     /**
      * @var Collection<int, EnrollmentLesson>
      */
     #[ORM\OneToMany(targetEntity: EnrollmentLesson::class, mappedBy: 'user')]
-    #[Groups(['me:read'])]
+    #[Groups(['me:read', 'admin_user_id'])]
+    #[MaxDepth(1)]
     private Collection $enrollmentLessons;
 
     /**
      * @var Collection<int, Certification>
      */
     #[ORM\OneToMany(targetEntity: Certification::class, mappedBy: 'user')]
-    #[Groups(['me:read'])]
+    #[Groups(['me:read', 'admin_user_id:read'])]
+    #[MaxDepth(1)]
     private Collection $certifications;
 
     public function __construct()
     {
         $this->themes = new ArrayCollection();
-        $this->products = new ArrayCollection();
-        $this->updateProducts = new ArrayCollection();
+        $this->lessonsCreated = new ArrayCollection();
+        $this->lessonsUpdated = new ArrayCollection();
+        $this->cursusCreated = new ArrayCollection();
+        $this->cursusUpdated = new ArrayCollection();
         $this->orders = new ArrayCollection();
         $this->enrollmentCursuses = new ArrayCollection();
         $this->enrollmentLessons = new ArrayCollection();
@@ -221,7 +334,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        return [$this->role?->value ?? 'ROLE_USER'];
+        return [$this->role ? 'ROLE_' . strtoupper($this->role->value) : 'ROLE_USER'];
     }
 
     public function getConfirmationToken(): ?string
@@ -271,29 +384,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Product>
+     * @return Collection<int, Lesson>
      */
-    public function getProducts(): Collection
+    public function getLessonsCreated(): Collection
     {
-        return $this->products;
+        return $this->lessonsCreated;
     }
 
-    public function addProduct(Product $product): static
+    public function addLessonCreated(Lesson $lesson): static
     {
-        if (!$this->products->contains($product)) {
-            $this->products->add($product);
-            $product->setCreatedBy($this);
+        if (!$this->lessonsCreated->contains($lesson)) {
+            $this->lessonsCreated->add($lesson);
+            $lesson->setCreatedBy($this);
         }
 
         return $this;
     }
 
-    public function removeProduct(Product $product): static
+    public function removeLessonCreated(Lesson $lesson): static
     {
-        if ($this->products->removeElement($product)) {
+        if ($this->lessonsCreated->removeElement($lesson)) {
             // set the owning side to null (unless already changed)
-            if ($product->getCreatedBy() === $this) {
-                $product->setCreatedBy(null);
+            if ($lesson->getCreatedBy() === $this) {
+                $lesson->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getLessonsUpdated(): Collection
+    {
+        return $this->lessonsUpdated;
+    }
+
+    public function addLessonUpdated(Lesson $lesson): static
+    {
+        if (!$this->lessonsUpdated->contains($lesson)) {
+            $this->lessonsUpdated->add($lesson);
+            $lesson->setUpdatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLessonUpdated(Lesson $lesson): static
+    {
+        if ($this->lessonsUpdated->removeElement($lesson)) {
+            if ($lesson->getUpdatedBy() === $this) {
+                $lesson->setUpdatedBy(null);
             }
         }
 
@@ -301,29 +440,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Product>
+     * @return Collection<int, Cursus>
      */
-    public function getUpdateProducts(): Collection
+    public function getCursusCreated(): Collection
     {
-        return $this->updateProducts;
+        return $this->cursusCreated;
     }
 
-    public function addUpdateProduct(Product $updateProduct): static
+    public function addCursusCreated(Cursus $cursus): static
     {
-        if (!$this->updateProducts->contains($updateProduct)) {
-            $this->updateProducts->add($updateProduct);
-            $updateProduct->setUpdatedBy($this);
+        if (!$this->cursusCreated->contains($cursus)) {
+            $this->cursusCreated->add($cursus);
+            $cursus->setCreatedBy($this);
         }
 
         return $this;
     }
 
-    public function removeUpdateProduct(Product $updateProduct): static
+    public function removeCursusCreated(Cursus $cursus): static
     {
-        if ($this->updateProducts->removeElement($updateProduct)) {
-            // set the owning side to null (unless already changed)
-            if ($updateProduct->getUpdatedBy() === $this) {
-                $updateProduct->setUpdatedBy(null);
+        if ($this->cursusCreated->removeElement($cursus)) {
+            if ($cursus->getCreatedBy() === $this) {
+                $cursus->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCursusUpdated(): Collection
+    {
+        return $this->cursusUpdated;
+    }
+
+    public function addCursusUpdated(Cursus $cursus): static
+    {
+        if (!$this->cursusUpdated->contains($cursus)) {
+            $this->cursusUpdated->add($cursus);
+            $cursus->setUpdatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCursusUpdated(Cursus $cursus): static
+    {
+        if ($this->cursusUpdated->removeElement($cursus)) {
+            if ($cursus->getUpdatedBy() === $this) {
+                $cursus->setUpdatedBy(null);
             }
         }
 
