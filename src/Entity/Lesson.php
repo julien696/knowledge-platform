@@ -64,9 +64,8 @@ class Lesson extends Product
     #[Groups(['lesson:read'])]
     private string $videoUrl;
 
-    #[ORM\ManyToOne(inversedBy: 'lessons')]
+    #[ORM\ManyToOne(inversedBy: 'lessons', fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: true)]
-    #[MaxDepth(1)]
     #[Groups(['lesson:read', 'cursus:read'])]
     private ?Cursus $cursus = null;
 
@@ -79,15 +78,13 @@ class Lesson extends Product
     /**
      * @var Collection<int, EnrollmentLesson>
      */
-    #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: EnrollmentLesson::class, cascade: ['persist', 'remove'])]
-    #[MaxDepth(1)]
+    #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: EnrollmentLesson::class, cascade: ['persist', 'remove'], fetch: 'EXTRA_LAZY')]
     private Collection $enrollmentLessons;
 
     /**
      * @var Collection<int, OrderItem>
      */
-    #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
-    #[MaxDepth(1)]
+    #[ORM\OneToMany(mappedBy: 'lesson', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], fetch: 'EXTRA_LAZY')]
     private Collection $orderItems;
 
     public function __construct()

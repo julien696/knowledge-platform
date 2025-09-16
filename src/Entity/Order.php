@@ -55,12 +55,20 @@ class Order
     #[Groups(['admin:read', 'user:read'])]
     private ?\DateTime $date = null;
 
+    #[ORM\Column(length: 50)]
+    #[Groups(['admin:read', 'user:read'])]
+    private string $status = 'pending';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['admin:read', 'user:read'])]
+    private ?string $stripeOrderId = null;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
     #[Assert\NotNull]
     #[Assert\Positive(message : 'Le prix du produit doit être positif')]
     #[Assert\Type(type: 'numeric')]
     #[Groups(['admin:read', 'user:read'])]
-    private ?string $total = null;
+    private ?string $amount = null;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
@@ -104,14 +112,14 @@ class Order
         return $this;
     }
 
-    public function getTotal(): ?string
+    public function getAmount(): ?string
     {
-        return $this->total;
+        return $this->amount;
     }
 
-    public function setTotal(string $total): static
+    public function setAmount(string $amount): static
     {
-        $this->total = $total;
+        $this->amount = $amount;
 
         return $this;
     }
@@ -125,6 +133,28 @@ class Order
     {
         $this->user = $user;
 
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getStripeOrderId(): ?string
+    {
+        return $this->stripeOrderId;
+    }
+
+    public function setStripeOrderId(?string $stripeOrderId): self
+    {
+        $this->stripeOrderId = $stripeOrderId;
         return $this;
     }
 
