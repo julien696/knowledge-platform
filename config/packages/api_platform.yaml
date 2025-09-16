@@ -1,12 +1,18 @@
 api_platform:
-    title: Hello API Platform
+    title: Knowledge Platform API
     version: 1.0.0
     eager_loading:
-        max_joins: 100
+        max_joins: 30
+        fetch_partial: true
+        force_eager: false
     defaults:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
+        pagination_items_per_page: 30
+        normalization_context:
+            enable_max_depth: true
+            groups: ['read']
 
     swagger:
         api_keys:

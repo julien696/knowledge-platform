@@ -54,24 +54,30 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 )]
 class Cursus extends Product
 {
-    #[ORM\ManyToOne(inversedBy: 'cursus')]
+    /** @var Theme|null */
+    #[ORM\ManyToOne(targetEntity: Theme::class, inversedBy: 'cursus', fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: true)]
-    #[MaxDepth(1)]
+    #[Groups(["cursus:read"])]
     private ?Theme $theme = null;
 
-    #[ORM\ManyToOne(inversedBy: 'cursusCreated')]
+    /** @var User|null */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'cursusCreated')]
+    #[Groups(["cursus:read"])]
     private ?User $created_by = null;
 
-    #[ORM\ManyToOne(inversedBy: 'cursusUpdated')]
+    /** @var User|null */
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'cursusUpdated')]
+    #[Groups(["cursus:read"])]
     private ?User $updated_by = null;
 
-    #[ORM\OneToMany(targetEntity: Lesson::class, mappedBy: 'cursus')]
+    /** @var Collection<int, Lesson> */
+    #[ORM\OneToMany(targetEntity: Lesson::class, mappedBy: 'cursus', fetch: 'EXTRA_LAZY')]
+    #[Groups(["cursus:read"])]
     #[MaxDepth(1)]
-    #[Groups(['cursus:read'])]
     private Collection $lessons;
 
-    #[ORM\OneToMany(targetEntity: EnrollmentCursus::class, mappedBy: 'cursus')]
-    #[MaxDepth(1)]
+    /** @var Collection<int, EnrollmentCursus> */
+    #[ORM\OneToMany(targetEntity: EnrollmentCursus::class, mappedBy: 'cursus', fetch: 'EXTRA_LAZY')]
     private Collection $enrollmentCursus;
 
     public function __construct()
