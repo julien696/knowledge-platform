@@ -6,8 +6,13 @@ use Stripe\PaymentIntent;
 
 class StripeService
 {
-    public function __construct(private StripeClient $stripe)
+    private StripeClient $stripe;
+
+    public function __construct(string $stripeSecretKey)
     {
+        $this->stripe = new StripeClient([
+            'api_key' => $stripeSecretKey,
+        ]);
     }
 
     public function createPaymentIntent(float $amount, string $currency = 'eur'): PaymentIntent
