@@ -60,10 +60,23 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             security: "is_granted('ROLE_ADMIN')",
             processor: UserStateProcessor::class,
             denormalizationContext: ['groups' => ['admin:write']],
+            normalizationContext: ['groups' => ['admin:read']],
+            output: User::class
+        ),
+        new \ApiPlatform\Metadata\Get(
+            uriTemplate: '/admin/users/{id}',
+            name: 'get_user_admin',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['admin:read']]
+        ),
+        new \ApiPlatform\Metadata\Get(
+            uriTemplate: '/admin/users',
+            name: 'get_users_admin',
+            security: "is_granted('ROLE_ADMIN')",
             normalizationContext: ['groups' => ['admin:read']]
         ),
         new \ApiPlatform\Metadata\Put(
-            uriTemplate: '/admin/user/{id}',
+            uriTemplate: '/admin/users/{id}',
             name: 'put_user',
             security: "is_granted('ROLE_ADMIN') or object == user",
             processor: UserStateProcessor::class,
@@ -110,6 +123,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         'me:read',
         'admin_list:read',
         'admin:write',
+        'admin:read',
         'admin_user_id:read',
         'user_id:read'
         ])]
