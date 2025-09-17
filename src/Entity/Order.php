@@ -15,7 +15,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
 #[ApiResource(
-    // Opérations d'administration
     operations: [
         new \ApiPlatform\Metadata\GetCollection(
             security: "is_granted('ROLE_ADMIN')",
@@ -25,7 +24,6 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_ADMIN')",
             normalizationContext: ['groups' => ['admin:read']]
         ),
-        // Les utilisateurs peuvent voir leurs propres commandes
         new \ApiPlatform\Metadata\GetCollection(
             uriTemplate: '/my/orders',
             security: "is_granted('ROLE_USER')",
