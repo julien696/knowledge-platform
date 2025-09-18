@@ -74,7 +74,6 @@ class StripeController extends AbstractController
             return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
         }
 
-        // Vérifier que la commande n'est pas déjà payée
         if($order->getStatus() === 'paid') {
             return new JsonResponse([
                 'message' => 'Commande déjà payée',
@@ -83,15 +82,12 @@ class StripeController extends AbstractController
             ]);
         }
 
-        // Marquer la commande comme payée
         $order->setStatus('paid');
         
-        // Créer les enrollments pour l'utilisateur
         $this->enrollmentService->createEnrollmentsFromOrder($order);
         
         $this->em->flush();
 
-        // Récupérer les éléments achetés pour la réponse
         $purchasedItems = [];
         foreach ($order->getOrderItems() as $item) {
             if ($item->getLesson()) {
