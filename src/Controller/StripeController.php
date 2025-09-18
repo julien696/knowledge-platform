@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\OrderRepository;
 use App\Service\StripeService;
+use App\Service\EnrollmentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -17,7 +19,8 @@ class StripeController extends AbstractController
         private StripeService $stripeService,
         private OrderRepository $orderRepository,
         private EntityManagerInterface $em,
-        private Security $security) {}
+        private Security $security,
+        private EnrollmentService $enrollmentService) {}
 
     #[Route('/api/stripe/create-payment-intent', name: 'create_payment_intent', methods: ['POST'])]
     public function createPaymentIntent(): JsonResponse
@@ -55,6 +58,101 @@ class StripeController extends AbstractController
         
         return new JsonResponse([
             'client_secret' => $clientSecret
+        ]);
+    }
+
+    #[Route('/api/orders/{id}/confirm-payment', name: 'confirm_payment', methods: ['POST'])]
+    public function confirmPayment(int $id): JsonResponse
+    {
+        $order = $this->orderRepository->find($id);
+
+        if(!$order) {
+            return new JsonResponse(['error' => 'Commande Introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        if($order->getUser() !== $this->security->getUser() && !$this->security->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Vérifier que la commande n'est pas déjà payée
+        if($order->getStatus() === 'paid') {
+            return new JsonResponse([
+                'message' => 'Commande déjà payée',
+                'order_id' => $order->getId(),
+                'status' => 'already_paid'
+            ]);
+        }
+
+        // Marquer la commande comme payée
+        $order->setStatus('paid');
+        
+        // Créer les enrollments pour l'utilisateur
+        $this->enrollmentService->createEnrollmentsFromOrder($order);
+        
+        $this->em->flush();
+
+        // Récupérer les éléments achetés pour la réponse
+        $purchasedItems = [];
+        foreach ($order->getOrderItems() as $item) {
+            if ($item->getLesson()) {
+                $purchasedItems[] = [
+                    'type' => 'lesson',
+                    'id' => $item->getLesson()->getId(),
+                    'name' => $item->getLesson()->getName()
+                ];
+            }
+            if ($item->getCursus()) {
+                $purchasedItems[] = [
+                    'type' => 'cursus',
+                    'id' => $item->getCursus()->getId(),
+                    'name' => $item->getCursus()->getName()
+                ];
+            }
+        }
+
+        return new JsonResponse([
+            'message' => 'Paiement confirmé et accès accordé',
+            'order_id' => $order->getId(),
+            'status' => 'paid',
+            'purchased_items' => $purchasedItems
+        ]);
+    }
+
+    #[Route('/api/check-access/lesson/{id}', name: 'check_lesson_access', methods: ['GET'])]
+    public function checkLessonAccess(int $id): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->security->getUser();
+        
+        if (!$user) {
+            return new JsonResponse(['has_access' => false, 'reason' => 'not_authenticated']);
+        }
+
+        $hasAccess = $this->enrollmentService->hasAccessToLesson($user, $id);
+        
+        return new JsonResponse([
+            'has_access' => $hasAccess,
+            'lesson_id' => $id,
+            'user_id' => $user->getId()
+        ]);
+    }
+
+    #[Route('/api/check-access/cursus/{id}', name: 'check_cursus_access', methods: ['GET'])]
+    public function checkCursusAccess(int $id): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->security->getUser();
+        
+        if (!$user) {
+            return new JsonResponse(['has_access' => false, 'reason' => 'not_authenticated']);
+        }
+
+        $hasAccess = $this->enrollmentService->hasAccessToCursus($user, $id);
+        
+        return new JsonResponse([
+            'has_access' => $hasAccess,
+            'cursus_id' => $id,
+            'user_id' => $user->getId()
         ]);
     }
 }
