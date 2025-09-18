@@ -13,7 +13,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: LessonRepository::class)]
@@ -56,17 +55,17 @@ class Lesson extends Product
 {
 
     #[ORM\Column(type: 'text')]
-    #[Groups(['lesson:read'])]
-    private string $description;
+    #[Groups(['lesson:paid', 'admin:write', 'admin:read'])]
+    private ?string $description = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\Url(message: 'L’URL de la vidéo doit être valide.')]
-    #[Groups(['lesson:read'])]
-    private string $videoUrl;
+    #[Assert\Url(message: 'L\'URL de la vidéo doit être valide.')]
+    #[Groups(['lesson:paid', 'admin:write', 'admin:read'])]
+    private ?string $videoUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessons', fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['lesson:read', 'cursus:read'])]
+    #[Groups(['lesson:read', 'cursus:read', 'admin:write'])]
     private ?Cursus $cursus = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessonsCreated')]

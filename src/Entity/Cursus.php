@@ -72,8 +72,7 @@ class Cursus extends Product
 
     /** @var Collection<int, Lesson> */
     #[ORM\OneToMany(targetEntity: Lesson::class, mappedBy: 'cursus', fetch: 'EXTRA_LAZY')]
-    #[Groups(["cursus:read"])]
-    #[MaxDepth(1)]
+    #[Groups(["cursus:read", "cursus:paid"])]
     private Collection $lessons;
 
     /** @var Collection<int, EnrollmentCursus> */
