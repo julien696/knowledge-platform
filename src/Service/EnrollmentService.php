@@ -66,6 +66,7 @@ class EnrollmentService
 
     public function hasAccessToLesson(User $user, $lesson): bool
     {
+
         if (is_numeric($lesson)) {
             $lesson = $this->em->getRepository(\App\Entity\Lesson::class)->find($lesson);
             if (!$lesson) {
@@ -81,6 +82,7 @@ class EnrollmentService
 
     public function hasAccessToCursus(User $user, $cursus): bool
     {
+
         if (is_numeric($cursus)) {
             $cursus = $this->em->getRepository(\App\Entity\Cursus::class)->find($cursus);
             if (!$cursus) {
@@ -94,3 +96,4 @@ class EnrollmentService
         return $enrollment !== null;
     }
 }
+
