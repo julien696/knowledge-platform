@@ -27,7 +27,6 @@ class UserStateProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?User
     {
-        // Gestion de la suppression
         if ($operation instanceof DeleteOperationInterface) {
             $this->em->remove($data);
             $this->em->flush();
@@ -38,17 +37,14 @@ class UserStateProcessor implements ProcessorInterface
             return $data;
         }
 
-        // Pour une nouvelle inscription (POST /register)
         if ($operation->getName() === 'user_register') {
             return $this->handleRegistration($data);
         }
 
-        // Pour la création d'utilisateur par un admin (POST /admin/users)
         if ($operation->getName() === 'post' && str_contains($context['uri'] ?? '', '/admin/users')) {
             return $this->handleAdminCreateUser($data);
         }
 
-        // Pour la mise à jour d'utilisateur (PUT/PATCH)
         if (in_array($operation->getName(), ['put', 'patch'], true)) {
             return $this->handleUpdateUser($data, $context);
         }

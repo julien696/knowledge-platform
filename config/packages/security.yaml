@@ -52,10 +52,17 @@ security:
         - { path: ^/api/theme, roles: PUBLIC_ACCESS }
         - { path: ^/api$, roles: PUBLIC_ACCESS }
         
+        # Routes de validation (protégées, payement requis)
+        - { path: ^/api/lessons/.*/validate, roles: ROLE_USER }
+        - { path: ^/api/lessons/.*/validation-status, roles: ROLE_USER }
+        - { path: ^/api/cursus/.*/validation-status, roles: ROLE_USER }
+                
         # Routes d'administration
         - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/api/users, methods: [POST, PUT, PATCH, DELETE], roles: ROLE_ADMIN }
         - { path: ^/api/orders, methods: [GET], roles: ROLE_ADMIN }
+        - { path: ^/api/admin/lessons/.*/validations, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/cursus/.*/validations, roles: ROLE_ADMIN }
         
         # Routes protégées nécessitant une authentification
         - { path: ^/api/users, methods: [GET], roles: IS_AUTHENTICATED_FULLY }

@@ -26,23 +26,30 @@ class SendConfirmationEmailMessageHandler
             return;
         }
 
+        $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'https://ton-domaine.com';
+        $mailerFrom = $_ENV['MAILER_FROM'] ?? 'no-reply@tonsite.com';
+
         $confirmationUrl = sprintf(
             '%s/confirm-account?token=%s',
-            $_ENV['FRONTEND_URL'] ?? 'https://ton-domaine.com',
+            $frontendUrl,
             $user->getConfirmationToken()
         );
 
-        $email = (new Email())
-            ->from($_ENV['MAILER_FROM'] ?? 'no-reply@tonsite.com')
-            ->to($user->getEmail())
-            ->subject('Confirmez votre compte')
-            ->html(sprintf(
-                '<p>Bonjour %s,</p><p>Cliquez sur ce lien pour confirmer votre compte : <a href="%s">%s</a></p>',
-                $user->getName(),
-                $confirmationUrl,
-                $confirmationUrl
-            ));
+        try {
+            $email = (new Email())
+                ->from($mailerFrom)
+                ->to($user->getEmail())
+                ->subject('Confirmez votre compte')
+                ->html(sprintf(
+                    '<p>Bonjour %s,</p><p>Cliquez sur ce lien pour confirmer votre compte : <a href="%s">%s</a></p>',
+                    htmlspecialchars($user->getName()),
+                    $confirmationUrl,
+                    $confirmationUrl
+                ));
 
-        $this->mailer->send($email);
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            error_log('Erreur envoi email confirmation: ' . $e->getMessage());
+        }
     }    
 }

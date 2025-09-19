@@ -107,7 +107,6 @@ class LessonControllerTest extends WebTestCase
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals('Lesson Test', $responseData['name']);
         $this->assertEquals(19.99, $responseData['price']);
-        // Les champs description et videoUrl ne sont plus visibles publiquement
         $this->assertArrayNotHasKey('description', $responseData);
         $this->assertArrayNotHasKey('videoUrl', $responseData);
     }
