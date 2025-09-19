@@ -26,7 +26,14 @@ class UpdateTimestampsCommand extends Command
         
         // Get all entity classes that use TimestampableTrait
         $entities = [
-            'App\Entity\Lesson', // Add other entity classes that use the trait
+            'App\Entity\Lesson',
+            'App\Entity\Cursus',
+            'App\Entity\Theme',
+            'App\Entity\User',
+            'App\Entity\EnrollmentLesson',
+            'App\Entity\EnrollmentCursus',
+            'App\Entity\Order',
+            'App\Entity\OrderItem',
         ];
         
         foreach ($entities as $entityClass) {
@@ -36,16 +43,14 @@ class UpdateTimestampsCommand extends Command
             
             $output->writeln(sprintf('Updating timestamps for %s...', $entityClass));
             
-            $entities = $this->entityManager->getRepository($entityClass)->findAll();
+            $entitiesList = $this->entityManager->getRepository($entityClass)->findAll();
             
-            foreach ($entities as $entity) {
-                $reflection = new \ReflectionClass($entity);
-                
-                if ($reflection->hasProperty('created_at') && $entity->getCreatedAt() === null) {
+            foreach ($entitiesList as $entity) {
+                if (method_exists($entity, 'getCreatedAt') && $entity->getCreatedAt() === null) {
                     $entity->setCreatedAt($now);
                 }
                 
-                if ($reflection->hasProperty('updated_at') && $entity->getUpdatedAt() === null) {
+                if (method_exists($entity, 'getUpdatedAt') && $entity->getUpdatedAt() === null) {
                     $entity->setUpdatedAt($now);
                 }
             }

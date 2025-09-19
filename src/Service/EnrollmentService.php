@@ -95,5 +95,17 @@ class EnrollmentService
 
         return $enrollment !== null;
     }
+
+    public function getLessonEnrollments(int $lessonId): array
+    {
+        return $this->em->getRepository(EnrollmentLesson::class)
+            ->findBy(['lesson' => $lessonId]);
+    }
+
+    public function getCursusEnrollments(int $cursusId): array
+    {
+        return $this->em->getRepository(EnrollmentCursus::class)
+            ->findBy(['cursus' => $cursusId]);
+    }
 }
 

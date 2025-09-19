@@ -22,7 +22,6 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
     operations: [
-        // Opération d'inscription (publique)
         new Post(
             uriTemplate: '/register',
             processor: UserStateProcessor::class,
@@ -32,48 +31,37 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             validationContext: ['groups' => ['user:register']]
         ),
         new GetCollection(
-            uriTemplate:'/users/list',
+            uriTemplate:'/users',
             name:'user_list',
             normalizationContext:['groups' => ['user_list:read']]
         ),
-        // Opérations d'administration
+        new \ApiPlatform\Metadata\Get(
+            uriTemplate: '/users/{id}',
+            name: 'user_by_id',
+            security: "is_granted('ROLE_ADMIN') or object == user",
+            normalizationContext: ['groups' => ['user_id:read', 'me:read', 'admin_user_id:read']]
+        ),
+        
         new \ApiPlatform\Metadata\GetCollection(
-            uriTemplate:'/users/list_admin',
-            name: 'user_list_admin',
+            uriTemplate:'/admin/users',
+            name: 'admin_users_list',
             security: "is_granted('ROLE_ADMIN')",
             normalizationContext: ['groups' => ['admin_list:read']]
         ),
         new \ApiPlatform\Metadata\Get(
-            uriTemplate: '/user/{id}/admin',
-            name: 'user_by_id_admin',
-            security: "is_granted('ROLE_ADMIN') or object == user",
-            normalizationContext: ['groups' => ['admin_user_id:read']]
-        ),
-         new \ApiPlatform\Metadata\Get(
-            uriTemplate: '/user/{id}',
-            name: 'user_by_id',
-            normalizationContext: ['groups' => ['user_id:read', 'me:read']]
+            uriTemplate: '/admin/users/{id}',
+            name: 'admin_user_by_id',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['admin:read']]
         ),
         new \ApiPlatform\Metadata\Post(
             uriTemplate: '/admin/users',
-            name: 'post_user',
+            name: 'admin_create_user',
             security: "is_granted('ROLE_ADMIN')",
             processor: UserStateProcessor::class,
             denormalizationContext: ['groups' => ['admin:write']],
             normalizationContext: ['groups' => ['admin:read']],
             output: User::class
-        ),
-        new \ApiPlatform\Metadata\Get(
-            uriTemplate: '/admin/users/{id}',
-            name: 'get_user_admin',
-            security: "is_granted('ROLE_ADMIN')",
-            normalizationContext: ['groups' => ['admin:read']]
-        ),
-        new \ApiPlatform\Metadata\Get(
-            uriTemplate: '/admin/users',
-            name: 'get_users_admin',
-            security: "is_granted('ROLE_ADMIN')",
-            normalizationContext: ['groups' => ['admin:read']]
         ),
         new \ApiPlatform\Metadata\Put(
             uriTemplate: '/admin/users/{id}',

@@ -7,6 +7,7 @@ use App\Entity\Trait\TimestampableTrait;
 use App\Repository\OrderItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
@@ -25,6 +26,7 @@ class OrderItem
     #[Assert\NotNull]
     #[Assert\Positive(message : 'Le prix du produit doit être positif')]
     #[Assert\Type(type: 'numeric')]
+    #[Groups(['admin:read', 'user:read'])]
     private ?string $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'OrderItems')]
@@ -32,9 +34,11 @@ class OrderItem
     private ?Order $orderId = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
+    #[Groups(['admin:read', 'user:read'])]
     private ?Lesson $lesson = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
+    #[Groups(['admin:read', 'user:read'])]
     private ?Cursus $cursus = null;
 
     public function getId(): ?int
