@@ -156,7 +156,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         'admin_list:read',
         'admin:write',
         'admin:read',
-        'admin_user_id:read'
+        'admin_user_id:read',
+        'me:read'
         ])]
     private ?UserRole $role = null;
 

@@ -12,10 +12,13 @@ use App\Repository\LessonRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: LessonRepository::class)]
+#[Vich\Uploadable]
 #[ApiResource(
     operations: [
         new GetCollection(
@@ -29,6 +32,18 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'lesson_id',
             security: null,
             normalizationContext: ['groups' => ['lesson:read'], 'enable_max_depth' => true]
+        ),
+        new GetCollection(
+            uriTemplate: '/admin/lesson',
+            name: 'admin_lesson_collection',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['admin:read'], 'enable_max_depth' => true]
+        ),
+        new Get(
+            uriTemplate: '/admin/lesson/{id}',
+            name: 'admin_lesson_id',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['admin:read'], 'enable_max_depth' => true]
         ),
         new Post(
             uriTemplate: '/lesson',
@@ -58,9 +73,19 @@ class Lesson extends Product
     #[Groups(['lesson:paid', 'admin:write', 'admin:read'])]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\Url(message: 'L\'URL de la vidéo doit être valide.')]
+    #[Vich\UploadableField(mapping: "lesson_video", fileNameProperty: "videoName")]
+    #[Assert\File(
+        maxSize: "100M",
+        mimeTypes: ["video/mp4", "video/avi", "video/mov", "video/wmv"],
+        mimeTypesMessage: "Veuillez uploader un fichier vidéo valide (MP4, AVI, MOV, WMV)"
+    )]
+    private ?File $videoFile = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['lesson:paid', 'admin:write', 'admin:read'])]
+    private ?string $videoName = null;
+
+    #[Groups(['lesson:paid', 'admin:read', 'admin:write'])]
     private ?string $videoUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessons', fetch: 'EAGER')]
@@ -104,16 +129,40 @@ class Lesson extends Product
         return $this;
     }
 
-    public function getVideoUrl(): string
+    public function setVideoFile(?File $videoFile = null): void
     {
-        return $this->videoUrl;
+        $this->videoFile = $videoFile;
+
     }
 
-    public function setVideoUrl(string $videoUrl): self
+    public function getVideoFile(): ?File
+    {
+        return $this->videoFile;
+    }
+
+    public function setVideoName(?string $videoName): void
+    {
+        $this->videoName = $videoName;
+    }
+
+    public function getVideoName(): ?string
+    {
+        return $this->videoName;
+    }
+
+    public function getVideoUrl(): ?string
+    {
+        if ($this->videoName) {
+            return '/uploads/videos/' . $this->videoName;
+        }
+        return null;
+    }
+
+    public function setVideoUrl(?string $videoUrl): void
     {
         $this->videoUrl = $videoUrl;
-        return $this;
     }
+
 
     public function getCursus(): ?Cursus
     {
