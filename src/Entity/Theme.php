@@ -12,7 +12,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
 use App\Entity\Trait\TimestampableTrait;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: ThemeRepository::class)]
 #[ApiResource(
@@ -27,6 +29,7 @@ use App\Entity\Trait\TimestampableTrait;
     ]
 )]
 #[ORM\HasLifecycleCallbacks]
+#[Vich\Uploadable]
 class Theme
 {
     use TimestampableTrait;
@@ -41,6 +44,16 @@ class Theme
     #[Assert\NotBlank(message: 'Le nom du Théme est obligatoire')]
     #[Groups(['theme:read', 'theme:write'])]
     private ?string $name = null;
+
+    #[Vich\UploadableField(mapping: "img", fileNameProperty: "imageName")]
+    private ?File $imageFile = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['theme:read', 'theme:write'])]
+    private ?string $imageName = null;
+
+    #[Groups(['theme:read'])]
+    private ?string $imageUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'themes')]
     private ?User $created_by = null;
@@ -78,6 +91,39 @@ class Theme
         $this->name = $name;
 
         return $this;
+    }
+
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        if ($this->imageName) {
+            return '/uploads/img/' . $this->imageName;
+        }
+        return null;
+    }
+
+    public function setImageUrl(?string $imageUrl): void
+    {
+        $this->imageUrl = $imageUrl;
     }
 
     public function getCreatedBy(): ?User

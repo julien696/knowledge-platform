@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Enum\UserRole;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\File\File;
 
 class AppFixtures extends Fixture
 {
@@ -44,6 +45,8 @@ class AppFixtures extends Fixture
         /** @var Theme $themeMusique */
         $themeMusique = new Theme();
         $themeMusique->setName('Musique');
+        $themeMusique->setImageFile(new File('public/uploads/img/musique.jpg'));
+        $themeMusique->setImageName('musique.jpg');
         $manager->persist($themeMusique);
 
         /** @var Cursus $cursusGuitare */
@@ -58,7 +61,7 @@ class AppFixtures extends Fixture
         $lessonGuitare1->setName('Découverte de l\'instrument');
         $lessonGuitare1->setPrice(26.0);
         $lessonGuitare1->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonGuitare1->setVideoUrl('https://example.com/videos/guitare-decouverte.mp4');
+        $lessonGuitare1->setVideoName('test-video.mp4');
         $lessonGuitare1->setCursus($cursusGuitare);
         $cursusGuitare->addLesson($lessonGuitare1);
         $manager->persist($lessonGuitare1);
@@ -68,7 +71,7 @@ class AppFixtures extends Fixture
         $lessonGuitare2->setName('Les accords et les gammes');
         $lessonGuitare2->setPrice(26.0);
         $lessonGuitare2->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonGuitare2->setVideoUrl('https://example.com/videos/guitare-accords-gammes.mp4');
+        $lessonGuitare2->setVideoName('test-video.mp4');
         $lessonGuitare2->setCursus($cursusGuitare);
         $cursusGuitare->addLesson($lessonGuitare2);
         $manager->persist($lessonGuitare2);
@@ -85,7 +88,7 @@ class AppFixtures extends Fixture
         $lessonPiano1->setName('Découverte de l\'instrument');
         $lessonPiano1->setPrice(26.0);
         $lessonPiano1->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonPiano1->setVideoUrl('https://example.com/videos/piano-decouverte.mp4');
+        $lessonPiano1->setVideoName('test-video.mp4');
         $lessonPiano1->setCursus($cursusPiano);
         $cursusPiano->addLesson($lessonPiano1);
         $manager->persist($lessonPiano1);
@@ -95,7 +98,7 @@ class AppFixtures extends Fixture
         $lessonPiano2->setName('Les accords et les gammes');
         $lessonPiano2->setPrice(26.0);
         $lessonPiano2->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonPiano2->setVideoUrl('https://example.com/videos/piano-accords-gammes.mp4');
+        $lessonPiano2->setVideoName('test-video.mp4');
         $lessonPiano2->setCursus($cursusPiano);
         $cursusPiano->addLesson($lessonPiano2);
         $manager->persist($lessonPiano2);
@@ -103,6 +106,8 @@ class AppFixtures extends Fixture
         /** @var Theme $themeInformatique */
         $themeInformatique = new Theme();
         $themeInformatique->setName('Informatique');
+        $themeInformatique->setImageFile(new File('public/uploads/img/informatique.jpg'));
+        $themeInformatique->setImageName('informatique.jpg');
         $manager->persist($themeInformatique);
 
         /** @var Cursus $cursusWeb */
@@ -117,7 +122,7 @@ class AppFixtures extends Fixture
         $lessonWeb1->setName('Les langages HTML et CSS');
         $lessonWeb1->setPrice(32.0);
         $lessonWeb1->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonWeb1->setVideoUrl('https://example.com/videos/web-html-css.mp4');
+        $lessonWeb1->setVideoName('test-video.mp4');
         $lessonWeb1->setCursus($cursusWeb);
         $cursusWeb->addLesson($lessonWeb1);
         $manager->persist($lessonWeb1);
@@ -127,7 +132,7 @@ class AppFixtures extends Fixture
         $lessonWeb2->setName('Dynamiser votre site avec JavaScript');
         $lessonWeb2->setPrice(32.0);
         $lessonWeb2->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonWeb2->setVideoUrl('https://example.com/videos/web-javascript.mp4');
+        $lessonWeb2->setVideoName('test-video.mp4');
         $lessonWeb2->setCursus($cursusWeb);
         $cursusWeb->addLesson($lessonWeb2);
         $manager->persist($lessonWeb2);
@@ -135,6 +140,8 @@ class AppFixtures extends Fixture
         /** @var Theme $themeJardinage */
         $themeJardinage = new Theme();
         $themeJardinage->setName('Jardinage');
+        $themeJardinage->setImageFile(new File('public/uploads/img/jardinage.jpeg'));
+        $themeJardinage->setImageName('jardinage.jpeg');
         $manager->persist($themeJardinage);
 
         /** @var Cursus $cursusJardinage */
@@ -149,7 +156,7 @@ class AppFixtures extends Fixture
         $lessonJardinage1->setName('Les outils du jardinier');
         $lessonJardinage1->setPrice(16.0);
         $lessonJardinage1->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonJardinage1->setVideoUrl('https://example.com/videos/jardinage-outils.mp4');
+        $lessonJardinage1->setVideoName('test-video.mp4');
         $lessonJardinage1->setCursus($cursusJardinage);
         $cursusJardinage->addLesson($lessonJardinage1);
         $manager->persist($lessonJardinage1);
@@ -159,7 +166,7 @@ class AppFixtures extends Fixture
         $lessonJardinage2->setName('Jardiner avec la lune');
         $lessonJardinage2->setPrice(16.0);
         $lessonJardinage2->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonJardinage2->setVideoUrl('https://example.com/videos/jardinage-lune.mp4');
+        $lessonJardinage2->setVideoName('test-video.mp4');
         $lessonJardinage2->setCursus($cursusJardinage);
         $cursusJardinage->addLesson($lessonJardinage2);
         $manager->persist($lessonJardinage2);
@@ -167,6 +174,8 @@ class AppFixtures extends Fixture
         /** @var Theme $themeCuisine */
         $themeCuisine = new Theme();
         $themeCuisine->setName('Cuisine');
+        $themeCuisine->setImageFile(new File('public/uploads/img/cuisine.jpeg'));
+        $themeCuisine->setImageName('cuisine.jpeg');
         $manager->persist($themeCuisine);
 
         /** @var Cursus $cursusCuisine1 */
@@ -181,7 +190,7 @@ class AppFixtures extends Fixture
         $lessonCuisine1->setName('Les modes de cuisson');
         $lessonCuisine1->setPrice(23.0);
         $lessonCuisine1->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonCuisine1->setVideoUrl('https://example.com/videos/cuisine-modes-cuisson.mp4');
+        $lessonCuisine1->setVideoName('test-video.mp4');
         $lessonCuisine1->setCursus($cursusCuisine1);
         $cursusCuisine1->addLesson($lessonCuisine1);
         $manager->persist($lessonCuisine1);
@@ -191,7 +200,7 @@ class AppFixtures extends Fixture
         $lessonCuisine2->setName('Les saveurs');
         $lessonCuisine2->setPrice(23.0);
         $lessonCuisine2->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonCuisine2->setVideoUrl('https://example.com/videos/cuisine-saveurs.mp4');
+        $lessonCuisine2->setVideoName('test-video.mp4');
         $lessonCuisine2->setCursus($cursusCuisine1);
         $cursusCuisine1->addLesson($lessonCuisine2);
         $manager->persist($lessonCuisine2);
@@ -208,7 +217,7 @@ class AppFixtures extends Fixture
         $lessonCuisine3->setName('Mettre en œuvre le style dans l\'assiette');
         $lessonCuisine3->setPrice(26.0);
         $lessonCuisine3->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonCuisine3->setVideoUrl('https://example.com/videos/cuisine-dressage-style.mp4');
+        $lessonCuisine3->setVideoName('test-video.mp4');
         $lessonCuisine3->setCursus($cursusCuisine2);
         $cursusCuisine2->addLesson($lessonCuisine3);
         $manager->persist($lessonCuisine3);
@@ -218,7 +227,7 @@ class AppFixtures extends Fixture
         $lessonCuisine4->setName('Harmoniser un repas à quatre plats');
         $lessonCuisine4->setPrice(26.0);
         $lessonCuisine4->setDescription('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.');
-        $lessonCuisine4->setVideoUrl('https://example.com/videos/cuisine-harmonie-repas.mp4');
+        $lessonCuisine4->setVideoName('test-video.mp4');
         $lessonCuisine4->setCursus($cursusCuisine2);
         $cursusCuisine2->addLesson($lessonCuisine4);
         $manager->persist($lessonCuisine4);

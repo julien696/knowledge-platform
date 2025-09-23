@@ -27,7 +27,7 @@ class OrderItem
     #[Assert\Positive(message : 'Le prix du produit doit être positif')]
     #[Assert\Type(type: 'numeric')]
     #[Groups(['admin:read', 'user:read'])]
-    private ?string $price = null;
+    private ?float $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'OrderItems')]
     #[ORM\JoinColumn(nullable: false)]

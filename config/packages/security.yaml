@@ -49,7 +49,7 @@ security:
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/lesson, roles: PUBLIC_ACCESS }
         - { path: ^/api/cursus, roles: PUBLIC_ACCESS }
-        - { path: ^/api/theme, roles: PUBLIC_ACCESS }
+        - { path: ^/api/themes, roles: PUBLIC_ACCESS }
         - { path: ^/api$, roles: PUBLIC_ACCESS }
         
         # Routes de validation (protégées, payement requis)
