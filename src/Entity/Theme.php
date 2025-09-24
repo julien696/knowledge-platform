@@ -20,7 +20,10 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ApiResource(
     operations: [
         new GetCollection(normalizationContext: ['groups' => ['theme:read']]),
-        new Get(normalizationContext: ['groups' => ['theme:read']]),
+        new Get(
+            normalizationContext: ['groups' => ['theme:read', 'theme:cursus', 'cursus:read'], 'enable_max_depth' => true],
+            provider: \App\State\ThemeProvider::class
+        ),
         new Post(
             normalizationContext: ['groups' => ['theme:read']],
             denormalizationContext: ['groups' => ['theme:write']],
@@ -61,7 +64,8 @@ class Theme
     /**
      * @var Collection<int, Cursus>
      */
-    #[ORM\OneToMany(targetEntity: Cursus::class, mappedBy: 'theme', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Cursus::class, mappedBy: 'theme', orphanRemoval: true, fetch: 'EAGER')]
+    #[Groups(['theme:cursus'])]
     private Collection $cursus;
 
     /**
@@ -141,6 +145,7 @@ class Theme
     /**
      * @return Collection<int, Cursus>
      */
+    #[Groups(['theme:cursus'])]
     public function getCursuses(): Collection
     {
         return $this->cursus;
@@ -159,7 +164,6 @@ class Theme
     public function removeCursus(Cursus $cursus): static
     {
         if ($this->cursus->removeElement($cursus)) {
-            // set the owning side to null (unless already changed)
             if ($cursus->getTheme() === $this) {
                 $cursus->setTheme(null);
             }
@@ -189,7 +193,6 @@ class Theme
     public function removeCertification(Certification $certification): static
     {
         if ($this->certifications->removeElement($certification)) {
-            // set the owning side to null (unless already changed)
             if ($certification->getTheme() === $this) {
                 $certification->setTheme(null);
             }

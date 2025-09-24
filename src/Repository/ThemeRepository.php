@@ -16,28 +16,22 @@ class ThemeRepository extends ServiceEntityRepository
         parent::__construct($registry, Theme::class);
     }
 
-    //    /**
-    //     * @return Theme[] Returns an array of Theme objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Theme
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Récupère un thème avec tous ses cursus et leurs leçons
+     *
+     * @param int $themeId
+     * @return Theme|null
+     */
+    public function findWithCursusAndLessons(int $themeId): ?Theme
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.cursus', 'c')
+            ->addSelect('c')
+            ->leftJoin('c.lessons', 'l')
+            ->addSelect('l')
+            ->where('t.id = :themeId')
+            ->setParameter('themeId', $themeId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
