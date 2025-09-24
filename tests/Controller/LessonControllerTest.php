@@ -64,7 +64,7 @@ class LessonControllerTest extends WebTestCase
         $lesson1->setName('Lesson 1');
         $lesson1->setPrice(19.99);
         $lesson1->setDescription('Description 1');
-        $lesson1->setVideoUrl('https://example.com/video1.mp4');
+        $lesson1->setVideoName('video1.mp4');
         $lesson1->setCursus($this->cursus);
         $this->em->persist($lesson1);
 
@@ -72,7 +72,7 @@ class LessonControllerTest extends WebTestCase
         $lesson2->setName('Lesson 2');
         $lesson2->setPrice(29.99);
         $lesson2->setDescription('Description 2');
-        $lesson2->setVideoUrl('https://example.com/video2.mp4');
+        $lesson2->setVideoName('video2.mp4');
         $lesson2->setCursus($this->cursus);
         $this->em->persist($lesson2);
 
@@ -94,7 +94,7 @@ class LessonControllerTest extends WebTestCase
         $lesson->setName('Lesson Test');
         $lesson->setPrice(19.99);
         $lesson->setDescription('Description test');
-        $lesson->setVideoUrl('https://example.com/video.mp4');
+        $lesson->setVideoName('video.mp4');
         $lesson->setCursus($this->cursus);
         $this->em->persist($lesson);
         $this->em->flush();
@@ -108,7 +108,7 @@ class LessonControllerTest extends WebTestCase
         $this->assertEquals('Lesson Test', $responseData['name']);
         $this->assertEquals(19.99, $responseData['price']);
         $this->assertArrayNotHasKey('description', $responseData);
-        $this->assertArrayNotHasKey('videoUrl', $responseData);
+        $this->assertArrayNotHasKey('videoName', $responseData);
     }
 
     public function testAdminCanCreateLesson(): void
@@ -125,7 +125,7 @@ class LessonControllerTest extends WebTestCase
             'name' => 'Introduction à PHP',
             'price' => 29.99,
             'description' => 'Une leçon d\'introduction à PHP',
-            'videoUrl' => 'https://example.com/video1.mp4',
+            'videoName' => 'video1.mp4',
             'cursus' => '/api/cursus/' . $cursus->getId()
         ];
 
@@ -145,7 +145,7 @@ class LessonControllerTest extends WebTestCase
         $this->assertEquals('Introduction à PHP', $responseData['name']);
         $this->assertEquals(29.99, $responseData['price']);
         $this->assertEquals('Une leçon d\'introduction à PHP', $responseData['description']);
-        $this->assertEquals('https://example.com/video1.mp4', $responseData['videoUrl']);
+        $this->assertEquals('video1.mp4', $responseData['videoName']);
 
         $lesson = $this->em->getRepository(Lesson::class)->findOneBy(['name' => 'Introduction à PHP']);
         $this->assertNotNull($lesson);
@@ -160,7 +160,7 @@ class LessonControllerTest extends WebTestCase
             'name' => 'Introduction à PHP',
             'price' => 29.99,
             'description' => 'Une leçon d\'introduction à PHP',
-            'videoUrl' => 'https://example.com/video1.mp4'
+            'videoName' => 'video1.mp4'
         ];
 
         $this->client->request(
@@ -184,7 +184,7 @@ class LessonControllerTest extends WebTestCase
         $lesson->setName('Lesson Original');
         $lesson->setPrice(19.99);
         $lesson->setDescription('Description originale');
-        $lesson->setVideoUrl('https://example.com/original.mp4');
+        $lesson->setVideoName('original.mp4');
         $lesson->setCursus($this->cursus);
         $this->em->persist($lesson);
         $this->em->flush();
@@ -195,7 +195,7 @@ class LessonControllerTest extends WebTestCase
             'name' => 'Lesson Modifiée',
             'price' => 39.99,
             'description' => 'Description modifiée',
-            'videoUrl' => 'https://example.com/modified.mp4'
+            'videoName' => 'modified.mp4'
         ];
 
         $this->client->request(
@@ -214,7 +214,7 @@ class LessonControllerTest extends WebTestCase
         $this->assertEquals('Lesson Modifiée', $responseData['name']);
         $this->assertEquals(39.99, $responseData['price']);
         $this->assertEquals('Description modifiée', $responseData['description']);
-        $this->assertEquals('https://example.com/modified.mp4', $responseData['videoUrl']);
+        $this->assertEquals('modified.mp4', $responseData['videoName']);
     }
 
     public function testNonAdminCannotUpdateLesson(): void
@@ -223,7 +223,7 @@ class LessonControllerTest extends WebTestCase
         $lesson->setName('Lesson Original');
         $lesson->setPrice(19.99);
         $lesson->setDescription('Description originale');
-        $lesson->setVideoUrl('https://example.com/original.mp4');
+        $lesson->setVideoName('original.mp4');
         $lesson->setCursus($this->cursus);
         $this->em->persist($lesson);
         $this->em->flush();
@@ -234,7 +234,7 @@ class LessonControllerTest extends WebTestCase
             'name' => 'Lesson Modifiée',
             'price' => 39.99,
             'description' => 'Description modifiée',
-            'videoUrl' => 'https://example.com/modified.mp4'
+            'videoName' => 'modified.mp4'
         ];
 
         $this->client->request(
@@ -256,7 +256,7 @@ class LessonControllerTest extends WebTestCase
         $lesson->setName('Lesson à supprimer');
         $lesson->setPrice(19.99);
         $lesson->setDescription('Description');
-        $lesson->setVideoUrl('https://example.com/video.mp4');
+        $lesson->setVideoName('video.mp4');
         $lesson->setCursus($this->cursus);
         $this->em->persist($lesson);
         $this->em->flush();

@@ -57,7 +57,7 @@ class Cursus extends Product
     /** @var Theme|null */
     #[ORM\ManyToOne(targetEntity: Theme::class, inversedBy: 'cursus', fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(["cursus:read"])]
+    #[Groups(["cursus:read", "theme:cursus"])]
     private ?Theme $theme = null;
 
     /** @var User|null */
