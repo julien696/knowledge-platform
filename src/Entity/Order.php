@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use App\Entity\Trait\TimestampableTrait;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,6 +19,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`order`')]
 #[ApiResource(
     operations: [
+        new Post(
+            security: "is_granted('ROLE_USER')",
+            denormalizationContext: ['groups' => ['order:write']],
+            normalizationContext: ['groups' => ['order:read']]
+        ),
         new \ApiPlatform\Metadata\GetCollection(
             security: "is_granted('ROLE_ADMIN')",
             normalizationContext: ['groups' => ['admin:read']]
@@ -47,12 +53,12 @@ class Order
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['admin:read', 'user:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
     #[Assert\DateTime]
-    #[Groups(['admin:read', 'user:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:read'])]
     private ?\DateTime $date = null;
 
     #[ORM\Column(length: 50)]
@@ -63,23 +69,22 @@ class Order
     #[Groups(['admin:read', 'user:read'])]
     private ?string $stripeOrderId = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 0)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
-    #[Assert\Positive(message : 'Le prix du produit doit être positif')]
     #[Assert\Type(type: 'numeric')]
-    #[Groups(['admin:read', 'user:read'])]
-    private ?string $amount = null;
+    #[Groups(['admin:read', 'user:read', 'order:read'])]
+    private ?float $amount = 0.0;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['admin:read'])]
+    #[Groups(['admin:read', 'order:read'])]
     private ?User $user = null;
 
     /**
      * @var Collection<int, OrderItem>
      */
-    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderId', orphanRemoval: true)]
-    #[Groups(['admin:read', 'user:read'])]
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderId', orphanRemoval: true, cascade: ['persist'])]
+    #[Groups(['admin:read', 'user:read', 'order:write'])]
     private Collection $orderItems;
 
     public function __construct()
@@ -87,12 +92,31 @@ class Order
         $this->orderItems = new ArrayCollection();
     }
     
-    /**
-     * Récupère les commandes de l'utilisateur connecté
-     */
+
     public static function getUserOrders($userId, OrderRepository $orderRepository): array
     {
         return $orderRepository->findBy(['user' => $userId], ['date' => 'DESC']);
+    }
+
+    public function calculateAmount(): void
+    {
+        $total = 0.0;
+        foreach ($this->orderItems as $item) {
+            $total += (float) $item->getPrice();
+        }
+        $this->amount = $total;
+    }
+
+    #[ORM\PrePersist]
+    public function prePersist(): void
+    {
+        if ($this->date === null) {
+            $this->date = new \DateTime();
+        }
+        // Ne recalculer l'amount que s'il y a des orderItems
+        if (!$this->orderItems->isEmpty()) {
+            $this->calculateAmount();
+        }
     }
 
     public function getId(): ?int
@@ -112,12 +136,12 @@ class Order
         return $this;
     }
 
-    public function getAmount(): ?string
+    public function getAmount(): ?float
     {
         return $this->amount;
     }
 
-    public function setAmount(string $amount): static
+    public function setAmount(float $amount): static
     {
         $this->amount = $amount;
 
@@ -172,6 +196,7 @@ class Order
         if (!$this->orderItems->contains($orderItem)) {
             $this->orderItems->add($orderItem);
             $orderItem->setOrderId($this);
+            $this->calculateAmount();
         }
 
         return $this;

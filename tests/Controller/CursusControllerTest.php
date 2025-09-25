@@ -119,7 +119,7 @@ class CursusControllerTest extends WebTestCase
     $lesson1 = new Lesson();
     $lesson1->setName('Leçon 1');
     $lesson1->setDescription('Description 1');
-    $lesson1->setVideoUrl('https://example.com/video1.mp4');
+    $lesson1->setVideoName('video.mp4');
     $lesson1->setPrice(25.25);
     $lesson1->setCursus($cursus1);
     $this->em->persist($lesson1);
@@ -127,7 +127,7 @@ class CursusControllerTest extends WebTestCase
     $lesson2 = new Lesson();
     $lesson2->setName('Leçon 2');
     $lesson2->setDescription('Description 2');
-    $lesson2->setVideoUrl('https://example.com/video2.mp4');
+    $lesson2->setVideoName('video.mp4');
     $lesson2->setPrice(25.25);
     $lesson2->setCursus($cursus2);
     $this->em->persist($lesson2);

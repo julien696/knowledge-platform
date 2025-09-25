@@ -32,6 +32,33 @@ class StripeController extends AbstractController
         ]);
     }
 
+    #[Route('/api/stripe/create-checkout-session', name: 'create_checkout_session', methods: ['POST'])]
+    public function createCheckoutSession(): JsonResponse
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($data['orderId'])) {
+            return new JsonResponse(['error' => 'orderId is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $order = $this->orderRepository->find($data['orderId']);
+
+        if (!$order) {
+            return new JsonResponse(['error' => 'Commande introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($order->getUser() !== $this->security->getUser() && !$this->security->isGranted('ROLE_ADMIN')) {
+            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+        
+        $session = $this->stripeService->createCheckoutSession($order);
+
+        return new JsonResponse([
+            'session_id' => $session->id,
+            'url' => $session->url
+        ]);
+    }
+
     #[Route('/api/orders/{id}/stripe', name: 'pay_order', methods: ['POST'])]
     public function payOrder(int $id): JsonResponse
     {

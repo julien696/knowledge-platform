@@ -51,17 +51,13 @@ class StripeControllerTest extends WebTestCase
         return $user;
     }
 
-    private function createOrder(User $user, float $amount = 20, ?string $stripeOrderId = null): Order
+    private function createOrder(User $user, float $amount = 20): Order
     {
         $order = new Order();
         $order->setUser($user);
         $order->setAmount($amount);
         $order->setStatus('pending');
         $order->setDate(new \DateTime());
-
-        if ($stripeOrderId) {
-            $order->setStripeOrderId($stripeOrderId);
-        }
 
         $this->em->persist($order);
         return $order;
@@ -74,59 +70,57 @@ class StripeControllerTest extends WebTestCase
         $this->client->loginUser($user);
     }
 
-    private function mockStripe(string $paymentId = 'pi_123', string $clientSecret = 'secret_123', bool $existing = false): void
+    private function mockStripeSession(string $sessionId = 'cs_123', string $sessionUrl = 'https://checkout.stripe.com/c/pay/cs_123'): void
     {
-        if ($existing) {
-            $this->stripeService
-                ->method('retrievePaymentIntentClientSecret')
-                ->willReturn($clientSecret);
-        } else {
-            $paymentIntentMock = PaymentIntent::constructFrom([
-                'id' => $paymentId,
-                'client_secret' => $clientSecret,
-            ]);
+        $sessionMock = new \stdClass();
+        $sessionMock->id = $sessionId;
+        $sessionMock->url = $sessionUrl;
 
-            $this->stripeService
-                ->method('createPaymentIntent')
-                ->willReturn($paymentIntentMock);
-        }
+        $this->stripeService
+            ->method('createCheckoutSession')
+            ->willReturn($sessionMock);
     }
 
-    public function testNewPayment(): void
+    public function testCreateCheckoutSession(): void
     {
         $user = $this->createUser();
         $order = $this->createOrder($user);
         $this->em->flush();
 
         $this->loginUser($user);
-        $this->mockStripe('pi_123', 'secret_123');
+        $this->mockStripeSession('cs_123', 'https://checkout.stripe.com/c/pay/cs_123');
 
-        $this->client->request('POST', '/api/orders/'.$order->getId().'/stripe');
+        $this->client->request('POST', '/api/stripe/create-checkout-session', [], [], 
+            ['CONTENT_TYPE' => 'application/json'], 
+            json_encode(['orderId' => $order->getId()])
+        );
+        
         $response = $this->client->getResponse();
 
         $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('secret_123', $data['client_secret']);
-
-        $this->em->refresh($order);
-        $this->assertEquals('pi_123', $order->getStripeOrderId());
+        $this->assertEquals('cs_123', $data['session_id']);
+        $this->assertEquals('https://checkout.stripe.com/c/pay/cs_123', $data['url']);
     }
 
-    public function testExistingPayment(): void
+    public function testConfirmPayment(): void
     {
         $user = $this->createUser();
-        $order = $this->createOrder($user, 20, 'pi_existing');
+        $order = $this->createOrder($user);
         $this->em->flush();
 
         $this->loginUser($user);
-        $this->mockStripe('pi_existing', 'secret_existing', true);
 
-        $this->client->request('POST', '/api/orders/'.$order->getId().'/stripe');
+        $this->client->request('POST', '/api/orders/'.$order->getId().'/confirm-payment', [], [], 
+            ['CONTENT_TYPE' => 'application/json'], 
+            json_encode([])
+        );
+        
         $response = $this->client->getResponse();
 
         $this->assertEquals(Response::HTTP_OK, $response->getStatusCode());
         $data = json_decode($response->getContent(), true);
-        $this->assertEquals('secret_existing', $data['client_secret']);
+        $this->assertEquals('Paiement confirmé avec succès', $data['message']);
     }
 
     public function testForbiddenAccess(): void
@@ -138,7 +132,10 @@ class StripeControllerTest extends WebTestCase
 
         $this->loginUser($userA);
 
-        $this->client->request('POST', '/api/orders/'.$order->getId().'/stripe');
+        $this->client->request('POST', '/api/stripe/create-checkout-session', [], [], 
+            ['CONTENT_TYPE' => 'application/json'], 
+            json_encode(['orderId' => $order->getId()])
+        );
         $response = $this->client->getResponse();
 
         $this->assertEquals(Response::HTTP_FORBIDDEN, $response->getStatusCode());
