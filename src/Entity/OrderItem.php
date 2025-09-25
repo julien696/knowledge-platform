@@ -34,11 +34,11 @@ class OrderItem
     private ?Order $orderId = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
-    #[Groups(['admin:read', 'user:read', 'order:write'])]
+    #[Groups(['admin:read', 'user:read', 'order:write', 'user:read'])]
     private ?Lesson $lesson = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
-    #[Groups(['admin:read', 'user:read', 'order:write'])]
+    #[Groups(['admin:read', 'user:read', 'order:write', 'user:read'])]
     private ?Cursus $cursus = null;
 
     public function getId(): ?int
@@ -90,5 +90,29 @@ class OrderItem
     {
         $this->cursus = $cursus;
         return $this;
+    }
+
+    #[Groups(['admin:read', 'user:read', 'order:read', 'me:read'])]
+    public function getProductName(): ?string
+    {
+        if ($this->cursus) {
+            return $this->cursus->getName();
+        }
+        if ($this->lesson) {
+            return $this->lesson->getName();
+        }
+        return null;
+    }
+
+    #[Groups(['admin:read', 'user:read', 'order:read', 'me:read'])]
+    public function getProductType(): ?string
+    {
+        if ($this->cursus) {
+            return 'cursus';
+        }
+        if ($this->lesson) {
+            return 'lesson';
+        }
+        return null;
     }
 }

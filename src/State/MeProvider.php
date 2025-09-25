@@ -25,6 +25,7 @@ class MeProvider implements ProviderInterface
             $user,
             $user->getEnrollmentCursuses(),
             $user->getEnrollmentLessons(),
+            $user->getOrders(),
             $user->getThemes(),
             $user->getCertifications()
         );
