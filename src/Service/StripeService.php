@@ -3,6 +3,8 @@ namespace App\Service;
 
 use Stripe\StripeClient;
 use Stripe\PaymentIntent;
+use Stripe\Checkout\Session;
+use App\Entity\Order;
 
 class StripeService
 {
@@ -32,5 +34,28 @@ class StripeService
     {
         $paymentIntent = $this->retrievePaymentIntent($paymentIntentId);
         return $paymentIntent->client_secret;
+    }
+
+    public function createCheckoutSession(Order $order): Session
+    {
+        return $this->stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => [
+                        'name' => 'Cursus E-learning',
+                    ],
+                    'unit_amount' => (int)($order->getAmount() * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => ($_ENV['FRONTEND_URL'] ?? 'http://localhost:4200') . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => ($_ENV['FRONTEND_URL'] ?? 'http://localhost:4200') . '/payment/cancel',
+            'metadata' => [
+                'order_id' => $order->getId(),
+            ],
+        ]);
     }
 }

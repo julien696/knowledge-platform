@@ -29,16 +29,16 @@ class OrderItem
     #[Groups(['admin:read', 'user:read'])]
     private ?float $price = null;
 
-    #[ORM\ManyToOne(inversedBy: 'OrderItems')]
+    #[ORM\ManyToOne(inversedBy: 'orderItems')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Order $orderId = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
-    #[Groups(['admin:read', 'user:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:write'])]
     private ?Lesson $lesson = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
-    #[Groups(['admin:read', 'user:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:write'])]
     private ?Cursus $cursus = null;
 
     public function getId(): ?int

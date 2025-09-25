@@ -74,4 +74,9 @@ class Me
         return $this->user?->getEmail();
     }
 
+    #[Groups(['me:read'])]
+    public function isVerified(): bool
+    {
+        return $this->user?->isVerified() ?? false;
+    }
 }
