@@ -12,6 +12,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EnrollmentLessonRepository::class)]
+#[ORM\Table(uniqueConstraints: [
+    new \Doctrine\ORM\Mapping\UniqueConstraint(name: 'unique_user_lesson', columns: ['user_id', 'lesson_id'])
+])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
@@ -114,5 +117,11 @@ class EnrollmentLesson
         $this->validatedAt = $validatedAt;
 
         return $this;
+    }
+
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
+    public function getLessonName(): ?string
+    {
+        return $this->lesson?->getName();
     }
 }

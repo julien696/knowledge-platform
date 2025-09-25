@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use App\Entity\User;
 use App\Entity\EnrollmentCursus;
 use App\Entity\EnrollmentLesson;
+use App\Entity\Order;
 use App\State\MeProvider;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -22,36 +23,36 @@ use Symfony\Component\Serializer\Annotation\Groups;
         provider: MeProvider::class
         )]
 class Me
-    {
-    #[Groups(['me:read'])]
-    public ?User $user = null;
+{
+    private ?User $user = null;
 
     /** @var EnrollmentCursus[] */
-    #[Groups(['me:read'])]
-    public iterable $enrollmentCursuses = [];
+    private iterable $enrollmentCursuses = [];
 
     /** @var EnrollmentLesson[] */
-    #[Groups(['me:read'])]
-    public iterable $enrollmentLessons = [];
+    private iterable $enrollmentLessons = [];
 
-    #[Groups(['me:read'])]
+    /** @var Order[] */
+    private iterable $orders = [];
+
     /** @var Theme[] */
-    public iterable $themes = [];
+    private iterable $themes = [];
 
-    #[Groups(['me:read'])]
     /** @var Certification[] */
-    public iterable $certifications = [];
+    private iterable $certifications = [];
     
     public function __construct(
     ?User $user = null,
     iterable $enrollmentCursuses = [],
     iterable $enrollmentLessons = [],
+    iterable $orders = [],
     iterable $themes = [],
     iterable $certifications = []
     ) {
         $this->user = $user;
         $this->enrollmentCursuses = $enrollmentCursuses;
         $this->enrollmentLessons = $enrollmentLessons;
+        $this->orders = $orders;
         $this->themes = $themes;
         $this->certifications = $certifications;
     }
@@ -75,8 +76,44 @@ class Me
     }
 
     #[Groups(['me:read'])]
-    public function isVerified(): bool
+    public function getRole(): ?string
+    {
+        return $this->user?->getRole()?->value;
+    }
+
+    #[Groups(['me:read'])]
+    public function getVerified(): bool
     {
         return $this->user?->isVerified() ?? false;
+    }
+
+    #[Groups(['me:read'])]
+    public function getEnrollmentCursuses(): iterable
+    {
+        return $this->enrollmentCursuses;
+    }
+
+    #[Groups(['me:read'])]
+    public function getEnrollmentLessons(): iterable
+    {
+        return $this->enrollmentLessons;
+    }
+
+    #[Groups(['me:read'])]
+    public function getOrders(): iterable
+    {
+        return $this->orders;
+    }
+
+    #[Groups(['me:read'])]
+    public function getThemes(): iterable
+    {
+        return $this->themes;
+    }
+
+    #[Groups(['me:read'])]
+    public function getCertifications(): iterable
+    {
+        return $this->certifications;
     }
 }

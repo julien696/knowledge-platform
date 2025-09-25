@@ -36,7 +36,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/my/orders',
             security: "is_granted('ROLE_USER')",
             normalizationContext: ['groups' => ['user:read']],
-            provider: [Order::class, 'getUserOrders']
+            provider: \App\State\UserOrdersProvider::class
         ),
         new \ApiPlatform\Metadata\Get(
             uriTemplate: '/my/orders/{id}',
@@ -53,16 +53,16 @@ class Order
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['admin:read', 'user:read', 'order:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:read', 'me:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
     #[Assert\DateTime]
-    #[Groups(['admin:read', 'user:read', 'order:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:read', 'me:read'])]
     private ?\DateTime $date = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['admin:read', 'user:read'])]
+    #[Groups(['admin:read', 'user:read', 'me:read'])]
     private string $status = 'pending';
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -72,7 +72,7 @@ class Order
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\Type(type: 'numeric')]
-    #[Groups(['admin:read', 'user:read', 'order:read'])]
+    #[Groups(['admin:read', 'user:read', 'order:read', 'me:read'])]
     private ?float $amount = 0.0;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
@@ -84,7 +84,7 @@ class Order
      * @var Collection<int, OrderItem>
      */
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'orderId', orphanRemoval: true, cascade: ['persist'])]
-    #[Groups(['admin:read', 'user:read', 'order:write'])]
+    #[Groups(['admin:read', 'user:read', 'order:write', 'me:read'])]
     private Collection $orderItems;
 
     public function __construct()
@@ -92,12 +92,6 @@ class Order
         $this->orderItems = new ArrayCollection();
     }
     
-
-    public static function getUserOrders($userId, OrderRepository $orderRepository): array
-    {
-        return $orderRepository->findBy(['user' => $userId], ['date' => 'DESC']);
-    }
-
     public function calculateAmount(): void
     {
         $total = 0.0;
