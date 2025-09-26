@@ -41,7 +41,7 @@ class UserStateProcessor implements ProcessorInterface
             return $this->handleRegistration($data);
         }
 
-        if ($operation->getName() === 'post' && str_contains($context['uri'] ?? '', '/admin/users')) {
+        if ($operation->getName() === 'admin_create_user') {
             return $this->handleAdminCreateUser($data);
         }
 

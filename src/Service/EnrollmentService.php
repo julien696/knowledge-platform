@@ -59,6 +59,7 @@ class EnrollmentService
             $enrollment->setUser($user);
             $enrollment->setCursus($cursus);
             $enrollment->setInscription(new \DateTime());
+            $enrollment->setTotalLessons(count($cursus->getLessons()));
 
             $this->em->persist($enrollment);
         }
@@ -66,7 +67,6 @@ class EnrollmentService
 
     public function hasAccessToLesson(User $user, $lesson): bool
     {
-
         if (is_numeric($lesson)) {
             $lesson = $this->em->getRepository(\App\Entity\Lesson::class)->find($lesson);
             if (!$lesson) {
@@ -74,10 +74,23 @@ class EnrollmentService
             }
         }
 
-        $enrollment = $this->em->getRepository(EnrollmentLesson::class)
+        $enrollmentLesson = $this->em->getRepository(EnrollmentLesson::class)
             ->findOneBy(['user' => $user, 'lesson' => $lesson]);
 
-        return $enrollment !== null;
+        if ($enrollmentLesson) {
+            return true;
+        }
+
+        if ($lesson->getCursus()) {
+            $enrollmentCursus = $this->em->getRepository(EnrollmentCursus::class)
+                ->findOneBy(['user' => $user, 'cursus' => $lesson->getCursus()]);
+
+            if ($enrollmentCursus) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function hasAccessToCursus(User $user, $cursus): bool

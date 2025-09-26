@@ -33,6 +33,13 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
             security: null,
             normalizationContext: ['groups' => ['lesson:read'], 'enable_max_depth' => true]
         ),
+        new Get(
+            uriTemplate: '/lesson/{id}/content',
+            name: 'lesson_content',
+            security: "is_granted('ROLE_USER')",
+            normalizationContext: ['groups' => ['lesson:paid'], 'enable_max_depth' => true],
+            provider: \App\State\LessonContentProvider::class
+        ),
         new GetCollection(
             uriTemplate: '/admin/lesson',
             name: 'admin_lesson_collection',
@@ -70,7 +77,7 @@ class Lesson extends Product
 {
 
     #[ORM\Column(type: 'text')]
-    #[Groups(['lesson:paid', 'admin:write', 'admin:read'])]
+    #[Groups(['lesson:paid', 'cursus:paid', 'admin:write', 'admin:read'])]
     private ?string $description = null;
 
     #[Vich\UploadableField(mapping: "lesson_video", fileNameProperty: "videoName")]
@@ -82,10 +89,10 @@ class Lesson extends Product
     private ?File $videoFile = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['lesson:paid', 'admin:write', 'admin:read'])]
+    #[Groups(['lesson:paid', 'cursus:paid', 'admin:write', 'admin:read'])]
     private ?string $videoName = null;
 
-    #[Groups(['lesson:paid', 'admin:read', 'admin:write'])]
+    #[Groups(['lesson:paid', 'cursus:paid', 'admin:read', 'admin:write'])]
     private ?string $videoUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'lessons', fetch: 'EAGER')]
