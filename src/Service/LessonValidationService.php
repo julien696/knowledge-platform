@@ -37,18 +37,28 @@ class LessonValidationService
             'lesson' => $lesson
         ]);
 
-        if (!$enrollment) {
-            throw new \InvalidArgumentException("L'utilisateur n'est pas inscrit à cette leçon");
+        if ($enrollment) {
+            $enrollment->setIsValidated(true);
+            $enrollment->setValidatedAt(new DateTime());
+            $this->em->flush();
+            return;
         }
-
-        $enrollment->setIsValidated(true);
-        $enrollment->setValidatedAt(new DateTime());
-
-        $this->em->flush();
 
         if ($lesson->getCursus()) {
-            $this->checkCursusCompletion($user, $lesson->getCursus()->getId());
+            $cursusEnrollment = $this->enrollmentCursusRepository->findOneBy([
+                'user' => $user,
+                'cursus' => $lesson->getCursus()
+            ]);
+
+            if ($cursusEnrollment) {
+                $cursusEnrollment->addValidatedLesson($lesson->getId());
+                $this->em->flush();
+                $this->checkAndValidateCursus($user, $lesson->getCursus()->getId());
+                return;
+            }
         }
+
+        throw new \InvalidArgumentException("L'utilisateur n'est pas inscrit à cette leçon");
     }
 
 
@@ -68,18 +78,6 @@ class LessonValidationService
             return false;
         }
 
-        foreach ($cursus->getLessons() as $lesson) {
-            $enrollmentLesson = $this->enrollmentLessonRepository->findOneBy([
-                'user' => $user,
-                'lesson' => $lesson
-            ]);
-
-            if (!$enrollmentLesson || !$enrollmentLesson->isValidated()) {
-                return false;
-            }
-        }
-
-        $this->autoValidateCursus($user, $cursusId);
         return true;
     }
 
@@ -137,4 +135,26 @@ class LessonValidationService
 
         return $enrollmentCursus && $enrollmentCursus->isValidated();
     }
+
+    private function checkAndValidateCursus(User $user, int $cursusId): void
+    {
+        $cursus = $this->cursusRepository->find($cursusId);
+        if (!$cursus) {
+            return;
+        }
+
+        $enrollmentCursus = $this->enrollmentCursusRepository->findOneBy([
+            'user' => $user,
+            'cursus' => $cursus
+        ]);
+
+        if (!$enrollmentCursus) {
+            return;
+        }
+
+        if ($enrollmentCursus->isAllLessonsValidated()) {
+            $this->autoValidateCursus($user, $cursusId);
+        }
+    }
+
 }

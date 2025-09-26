@@ -19,7 +19,7 @@ class LessonController extends AbstractController
         private Security $security
     ) {}
 
-    #[Route('/api/lessons/{id}/validate', name: 'validate_lesson', methods: ['POST'])]
+    #[Route('/api/lesson/{id}/validate', name: 'validate_lesson', methods: ['POST'])]
     public function validateLesson(int $id): JsonResponse
     {
         /** @var User|null $user */
@@ -49,7 +49,7 @@ class LessonController extends AbstractController
         }
     }
 
-    #[Route('/api/lessons/{id}/validation-status', name: 'lesson_validation_status', methods: ['GET'])]
+    #[Route('/api/lesson/{id}/validation-status', name: 'lesson_validation_status', methods: ['GET'])]
     public function getLessonValidationStatus(int $id): JsonResponse
     {
         /** @var User|null $user */
@@ -94,7 +94,7 @@ class LessonController extends AbstractController
         ]);
     }
 
-    #[Route('/api/admin/lessons/{id}/validations', name: 'admin_lesson_validations', methods: ['GET'])]
+    #[Route('/api/admin/lesson/{id}/validations', name: 'admin_lesson_validations', methods: ['GET'])]
     public function getLessonValidationsForAdmin(int $id): JsonResponse
     {
         /** @var User|null $user */

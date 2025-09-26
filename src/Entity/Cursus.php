@@ -31,6 +31,13 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             security: null,
             normalizationContext: ['groups' => ['cursus:read']]
         ),
+        new Get(
+            uriTemplate: '/cursus/{id}/content',
+            name: 'cursus_content',
+            security: "is_granted('ROLE_USER')",
+            normalizationContext: ['groups' => ['cursus:paid']],
+            provider: \App\State\CursusContentProvider::class
+        ),
         new Post(
             uriTemplate: '/cursus',
             name: 'cursus_create',

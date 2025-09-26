@@ -3,6 +3,8 @@
 namespace App\DataFixtures;
 
 use App\Entity\Cursus;
+use App\Entity\EnrollmentCursus;
+use App\Entity\EnrollmentLesson;
 use App\Entity\Lesson;
 use App\Entity\Theme;
 use App\Entity\User;
@@ -15,12 +17,13 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        $this->createUsers($manager);
-        $this->createThemesAndContent($manager);
+        $users = $this->createUsers($manager);
+        $content = $this->createThemesAndContent($manager);
+        $this->createEnrollments($manager, $users, $content);
         $manager->flush();
     }
 
-    private function createUsers(ObjectManager $manager): void
+    private function createUsers(ObjectManager $manager): array
     {
         $user = new User();
         $user->setName('Johndoe');
@@ -37,9 +40,11 @@ class AppFixtures extends Fixture
         $admin->setRole(UserRole::ADMIN);
         $admin->setIsVerified(true);
         $manager->persist($admin);
+
+        return ['user' => $user, 'admin' => $admin];
     }
 
-    private function createThemesAndContent(ObjectManager $manager): void
+    private function createThemesAndContent(ObjectManager $manager): array
     {
 
         /** @var Theme $themeMusique */
@@ -54,6 +59,7 @@ class AppFixtures extends Fixture
         $cursusGuitare->setName('Initiation à la guitare');
         $cursusGuitare->setPrice(50.0);
         $cursusGuitare->setTheme($themeMusique);
+        $cursusGuitare->setAutoValidation(true);
         $manager->persist($cursusGuitare);
 
         /** @var Lesson $lessonGuitare1 */
@@ -115,6 +121,7 @@ class AppFixtures extends Fixture
         $cursusWeb->setName('Initiation au développement web');
         $cursusWeb->setPrice(60.0);
         $cursusWeb->setTheme($themeInformatique);
+        $cursusWeb->setAutoValidation(false);
         $manager->persist($cursusWeb);
 
         /** @var Lesson $lessonWeb1 */
@@ -231,5 +238,36 @@ class AppFixtures extends Fixture
         $lessonCuisine4->setCursus($cursusCuisine2);
         $cursusCuisine2->addLesson($lessonCuisine4);
         $manager->persist($lessonCuisine4);
+
+        return [
+            'lessons' => [
+                $lessonGuitare1, $lessonGuitare2, $lessonPiano1, $lessonPiano2,
+                $lessonWeb1, $lessonWeb2, $lessonJardinage1, $lessonJardinage2,
+                $lessonCuisine1, $lessonCuisine2, $lessonCuisine3, $lessonCuisine4
+            ],
+            'cursus' => [
+                $cursusGuitare, $cursusPiano, $cursusWeb, $cursusJardinage,
+                $cursusCuisine1, $cursusCuisine2
+            ]
+        ];
+    }
+
+    private function createEnrollments(ObjectManager $manager, array $users, array $content): void
+    {
+        $user = $users['user'];
+        
+        $enrollmentLesson = new EnrollmentLesson();
+        $enrollmentLesson->setUser($user);
+        $enrollmentLesson->setLesson($content['lessons'][0]);
+        $enrollmentLesson->setInscription(new \DateTime());
+        $enrollmentLesson->setIsValidated(false);
+        $manager->persist($enrollmentLesson);
+
+        $enrollmentCursus = new EnrollmentCursus();
+        $enrollmentCursus->setUser($user);
+        $enrollmentCursus->setCursus($content['cursus'][2]);
+        $enrollmentCursus->setInscription(new \DateTime());
+        $enrollmentCursus->setIsValidated(false);
+        $manager->persist($enrollmentCursus);
     }
 }

@@ -26,6 +26,12 @@ class EnrollmentCursus
 {
     use TimestampableTrait;
 
+    public function __construct()
+    {
+        $this->validatedLessons = [];
+        $this->totalLessons = 0;
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -53,6 +59,14 @@ class EnrollmentCursus
     #[Assert\DateTime]
     #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
     private ?\DateTime $inscription = null;
+
+    #[ORM\Column(type: 'json')]
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
+    private array $validatedLessons = [];
+
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
+    private int $totalLessons = 0;
 
     public function getId(): ?int
     {
@@ -95,6 +109,7 @@ class EnrollmentCursus
         return $this;
     }
 
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
     public function isValidated(): bool
     {
         return $this->isValidated;
@@ -123,5 +138,52 @@ class EnrollmentCursus
     public function getCursusName(): ?string
     {
         return $this->cursus?->getName();
+    }
+
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
+    public function getCursusId(): ?int
+    {
+        return $this->cursus?->getId();
+    }
+
+    public function getValidatedLessons(): array
+    {
+        return $this->validatedLessons;
+    }
+
+    public function setValidatedLessons(array $validatedLessons): static
+    {
+        $this->validatedLessons = $validatedLessons;
+        return $this;
+    }
+
+    public function addValidatedLesson(int $lessonId): static
+    {
+        if (!in_array($lessonId, $this->validatedLessons)) {
+            $this->validatedLessons[] = $lessonId;
+        }
+        return $this;
+    }
+
+    public function getTotalLessons(): int
+    {
+        return $this->totalLessons;
+    }
+
+    public function setTotalLessons(int $totalLessons): static
+    {
+        $this->totalLessons = $totalLessons;
+        return $this;
+    }
+
+    public function isAllLessonsValidated(): bool
+    {
+        return count($this->validatedLessons) === $this->totalLessons && $this->totalLessons > 0;
+    }
+
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
+    public function getValidatedLessonsCount(): int
+    {
+        return count($this->validatedLessons);
     }
 }

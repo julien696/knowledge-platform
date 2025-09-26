@@ -61,7 +61,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             processor: UserStateProcessor::class,
             denormalizationContext: ['groups' => ['admin:write']],
             normalizationContext: ['groups' => ['admin:read']],
-            output: User::class
+            validationContext: ['groups' => ['admin:write']]
         ),
         new \ApiPlatform\Metadata\Put(
             uriTemplate: '/admin/users/{id}',
@@ -69,7 +69,8 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
             security: "is_granted('ROLE_ADMIN') or object == user",
             processor: UserStateProcessor::class,
             denormalizationContext: ['groups' => ['admin:write']],
-            normalizationContext: ['groups' => ['admin:read']]
+            normalizationContext: ['groups' => ['admin:read']],
+            validationContext: ['groups' => ['admin:write']]
         ),
         new \ApiPlatform\Metadata\Delete(
             security: "is_granted('ROLE_ADMIN')"
@@ -97,12 +98,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Le nom ne peut pas être vide.')]
+    #[Assert\NotBlank(message: 'Le nom ne peut pas être vide.', groups: ['user:register', 'admin:write'])]
     #[Assert\Length(
         min: 2,
         max: 20,
         minMessage: "Le nom doit contenir au moins {{ limit }} caractères.",
-        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères.",
+        groups: ['user:register', 'admin:write', 'admin:update']
     )]
     #[Groups([
         'user_register:write',
@@ -118,9 +120,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $name = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(groups: ['user:register', 'admin:write'])]
     #[Assert\Email(
         message: "L'email {{ value }} n'est pas valide.",
+        groups: ['user:register', 'admin:write', 'admin:update']
     )]
     #[Groups([
         'user_register:write',
@@ -138,11 +141,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $password = null;
     
-    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire', groups: ['user:register'])]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire', groups: ['user:register', 'admin:write'])]
     #[Assert\Length(
         min: 6, 
         max: 255,
-        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères."
+        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères.",
+        groups: ['user:register', 'admin:write', 'admin:update']
         )]
     #[Groups([
         'user_register:write',
@@ -548,7 +552,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeEnrollmentCursus(EnrollmentCursus $enrollmentCursus): static
     {
         if ($this->enrollmentCursuses->removeElement($enrollmentCursus)) {
-            // set the owning side to null (unless already changed)
             if ($enrollmentCursus->getUser() === $this) {
                 $enrollmentCursus->setUser(null);
             }
@@ -578,7 +581,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeEnrollmentLesson(EnrollmentLesson $enrollmentLesson): static
     {
         if ($this->enrollmentLessons->removeElement($enrollmentLesson)) {
-            // set the owning side to null (unless already changed)
             if ($enrollmentLesson->getUser() === $this) {
                 $enrollmentLesson->setUser(null);
             }
@@ -608,12 +610,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeCertification(Certification $certification): static
     {
         if ($this->certifications->removeElement($certification)) {
-            // set the owning side to null (unless already changed)
             if ($certification->getUser() === $this) {
                 $certification->setUser(null);
             }
         }
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function prePersist(): void
+    {
+        if ($this->plainPassword) {
+        }
     }
 }

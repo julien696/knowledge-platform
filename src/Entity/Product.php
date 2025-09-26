@@ -21,13 +21,13 @@ abstract class Product
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom du produit est obligatoire')]
-    #[Groups(['lesson:read', 'admin:read', 'admin:write', 'cursus:read'])]
+    #[Groups(['lesson:read', 'lesson:paid', 'admin:read', 'admin:write', 'cursus:read', 'cursus:paid'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'float')]
     #[Assert\NotNull]
     #[Assert\Positive(message: 'Le prix du produit doit être positif')]
-    #[Groups(['lesson:read', 'admin:read', 'admin:write', 'cursus:read'])]
+    #[Groups(['lesson:read', 'lesson:paid', 'admin:read', 'admin:write', 'cursus:read', 'cursus:paid'])]
     private ?float $price = null;
 
     public function __construct() {}

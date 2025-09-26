@@ -4,6 +4,7 @@ namespace App\Service;
 use Stripe\StripeClient;
 use Stripe\PaymentIntent;
 use Stripe\Checkout\Session;
+use Stripe\Webhook;
 use App\Entity\Order;
 
 class StripeService
@@ -57,5 +58,16 @@ class StripeService
                 'order_id' => $order->getId(),
             ],
         ]);
+    }
+
+    public function constructWebhookEvent(string $payload, string $signature): \Stripe\Event
+    {
+        $endpointSecret = $_ENV['STRIPE_WEBHOOK_SECRET'] ?? '';
+        
+        if (empty($endpointSecret)) {
+            throw new \Exception('Stripe webhook secret not configured');
+        }
+        
+        return Webhook::constructEvent($payload, $signature, $endpointSecret);
     }
 }

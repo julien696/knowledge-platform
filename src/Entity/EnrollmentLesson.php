@@ -124,4 +124,10 @@ class EnrollmentLesson
     {
         return $this->lesson?->getName();
     }
+
+    #[Groups(['me:read', 'enrollment:read', 'admin:read'])]
+    public function getLessonId(): ?int
+    {
+        return $this->lesson?->getId();
+    }
 }
