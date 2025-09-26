@@ -4,10 +4,16 @@ providers = ["php"]
 nixPkgs = ["php82", "php82Packages.composer"]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
+cmds = [
+  "mkdir -p var/cache var/log",
+  "composer install --no-dev --optimize-autoloader"
+]
 
 [phases.build]
-cmds = ["php bin/console cache:clear --env=prod"]
+cmds = [
+  "chmod -R 777 var/",
+  "php bin/console cache:clear --env=prod"
+]
 
 [start]
 cmd = "php -S 0.0.0.0:$PORT -t public"
