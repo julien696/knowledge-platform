@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "public/index.php",
+      "use": "@vercel/php"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "public/index.php"
+    }
+  ],
+  "env": {
+    "APP_ENV": "prod",
+    "APP_SECRET": "knowledge",
+    "DATABASE_URL": "sqlite:///tmp/data.db",
+    "MAILER_DSN": "null://null",
+    "MESSENGER_TRANSPORT_DSN": "doctrine://default",
+    "STRIPE_SECRET_KEY": "sk_test_placeholder",
+    "STRIPE_PUBLISHABLE_KEY": "pk_test_placeholder",
+    "JWT_SECRET_KEY": "%kernel.project_dir%/config/jwt/private.pem",
+    "JWT_PUBLIC_KEY": "%kernel.project_dir%/config/jwt/public.pem",
+    "JWT_PASSPHRASE": "knowledge"
+  }
+}
