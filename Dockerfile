@@ -23,6 +23,17 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY . /var/www/html/
 WORKDIR /var/www/html/
 
+# Créer le fichier .env pour la production
+RUN echo 'APP_ENV=prod\n\
+APP_SECRET=e322ce7be5704119d8e71fb4ba34fbf8\n\
+DATABASE_URL="mysql://user:password@localhost:3306/database"\n\
+JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem\n\
+JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem\n\
+JWT_PASSPHRASE=knowledge\n\
+MAILER_DSN=smtp://localhost:1025\n\
+CORS_ALLOW_ORIGIN=*\n\
+MESSENGER_TRANSPORT_DSN=doctrine://default' > .env
+
 # Variables d'environnement
 ENV APP_ENV=prod
 ENV APP_SECRET=e322ce7be5704119d8e71fb4ba34fbf8
