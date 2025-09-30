@@ -36,4 +36,4 @@ API développer avec API Platform v4, Mysql, stripe, et des fixtures pour les do
 
 ## Utilisateurs de test
 - **Utilisateur** : `johndoe@gmail.com` / `johndoe`
-- **Admin** : `admin@gmail.com` / `adminpassword`
+- **Admin** : `admin@gmail.com` / `adminpassword` 
