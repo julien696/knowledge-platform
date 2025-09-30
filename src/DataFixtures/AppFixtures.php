@@ -59,7 +59,6 @@ class AppFixtures extends Fixture
         $cursusGuitare->setName('Initiation à la guitare');
         $cursusGuitare->setPrice(50.0);
         $cursusGuitare->setTheme($themeMusique);
-        $cursusGuitare->setAutoValidation(true);
         $manager->persist($cursusGuitare);
 
         /** @var Lesson $lessonGuitare1 */
@@ -121,7 +120,6 @@ class AppFixtures extends Fixture
         $cursusWeb->setName('Initiation au développement web');
         $cursusWeb->setPrice(60.0);
         $cursusWeb->setTheme($themeInformatique);
-        $cursusWeb->setAutoValidation(false);
         $manager->persist($cursusWeb);
 
         /** @var Lesson $lessonWeb1 */
