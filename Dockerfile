@@ -1,36 +1,39 @@
-# Base PHP avec Apache
 FROM php:8.2-apache
 
-# Installer extensions PHP et outils nécessaires
+# Dépendances système
 RUN apt-get update && apt-get install -y \
     libzip-dev unzip git libicu-dev libonig-dev \
     && docker-php-ext-install pdo pdo_mysql zip intl opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copier Composer depuis l'image officielle
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Copier le projet
 COPY . /var/www/html/
 WORKDIR /var/www/html
 
-# Variables d'environnement pour prod
+# Variables d'environnement pour le build
 ARG APP_ENV=prod
+ARG DATABASE_URL
+ARG JWT_PASSPHRASE
 ENV APP_ENV=${APP_ENV}
-ENV APP_SECRET=changeme123
+ENV DATABASE_URL=${DATABASE_URL}
+ENV APP_SECRET=e322ce7be5704119d8e71fb4ba34fbf8
+ENV JWT_PASSPHRASE=${JWT_PASSPHRASE}
 
-# Installer les dépendances Symfony (prod seulement)
+# Copier les clés JWT pour prod
+RUN mkdir -p config/jwt
+COPY config/jwt/private.pem config/jwt/private.pem
+COPY config/jwt/public.pem config/jwt/public.pem
+
+# Installer les dépendances Symfony (prod)
 RUN composer install --no-dev --optimize-autoloader
 
-# Vider le cache prod pour éviter les erreurs
+# Vider le cache prod
 RUN php bin/console cache:clear --env=prod --no-warmup
 
-# Tester la connexion PDO MySQL (optionnel mais pratique pour debug)
-# RUN php bin/console doctrine:database:connect || echo "Check DATABASE_URL"
-
-# Exposer le port Apache
 EXPOSE 80
-
-# Lancer Apache
 CMD ["apache2-foreground"]
+
 
