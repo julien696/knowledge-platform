@@ -38,11 +38,14 @@ MESSENGER_TRANSPORT_DSN=doctrine://default' > .env
 ENV APP_ENV=prod
 ENV APP_SECRET=e322ce7be5704119d8e71fb4ba34fbf8
 
-# Installer les dépendances Symfony (prod)
-RUN composer install --no-dev --optimize-autoloader
+# Installer les dépendances Symfony (prod) sans exécuter les scripts
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Générer les clés JWT
 RUN php bin/console lexik:jwt:generate-keypair --no-interaction
+
+# Exécuter les scripts Composer maintenant que les clés JWT sont générées
+RUN composer run-script --no-dev post-install-cmd
 
 # Vider le cache prod
 RUN php bin/console cache:clear --env=prod --no-warmup
