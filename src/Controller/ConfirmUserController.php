@@ -23,6 +23,8 @@ final class ConfirmUserController extends AbstractController
         $user->setConfirmationToken(null);
         $em->flush();
 
-        return new JsonResponse(['message' => 'Compte confirmé avec succès.']);
+        return new JsonResponse([
+            'message' => 'Compte confirmé avec succès.'
+        ]);
     }
 }

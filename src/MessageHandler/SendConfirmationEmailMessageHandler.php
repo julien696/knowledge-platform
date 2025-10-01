@@ -26,11 +26,11 @@ class SendConfirmationEmailMessageHandler
             return;
         }
 
-        $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'https://ton-domaine.com';
+        $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:4200';
         $mailerFrom = $_ENV['MAILER_FROM'] ?? 'no-reply@tonsite.com';
 
         $confirmationUrl = sprintf(
-            '%s/confirm-account?token=%s',
+            '%s/confirm/%s',
             $frontendUrl,
             $user->getConfirmationToken()
         );
@@ -41,7 +41,7 @@ class SendConfirmationEmailMessageHandler
                 ->to($user->getEmail())
                 ->subject('Confirmez votre compte')
                 ->html(sprintf(
-                    '<p>Bonjour %s,</p><p>Cliquez sur ce lien pour confirmer votre compte : <a href="%s">%s</a></p>',
+                    '<p>Bonjour %s,</p><p>Cliquez sur ce lien pour confirmer votre compte : <a href="%s">Confimer</a></p>',
                     htmlspecialchars($user->getName()),
                     $confirmationUrl,
                     $confirmationUrl
