@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-# Installer extensions PHP pour Symfony
+# Installer extensions PHP
 RUN apt-get update && apt-get install -y \
     git unzip libicu-dev libonig-dev libzip-dev \
     && docker-php-ext-install pdo pdo_mysql intl mbstring zip \
@@ -9,18 +9,18 @@ RUN apt-get update && apt-get install -y \
 # Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copier le projet
+# Copier projet Symfony
 COPY . /var/www/html/
 WORKDIR /var/www/html
 
-# Installer dépendances sans scripts automatiques
+# Installer dépendances sans scripts auto
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Exécuter manuellement les commandes Symfony
+# Exécuter manuellement Symfony
 RUN php bin/console cache:clear --env=prod
 RUN php bin/console cache:warmup --env=prod
 
-# Droits Apache sur var
+# Droits Apache
 RUN chown -R www-data:www-data var
 
 EXPOSE 80
